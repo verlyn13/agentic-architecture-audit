@@ -1,0 +1,29 @@
+name: Hygiene
+
+# Enforces .pre-commit-config.yaml on every push/PR, so hygiene holds even
+# when no one ran `pre-commit install` locally. This is the can't-be-forgotten
+# layer: line endings, trailing whitespace, final newline, YAML/JSON/TOML
+# validity, merge-conflict markers, oversized files.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: hygiene-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pre-commit:
+    name: pre-commit (all files)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - uses: pre-commit/action@v3.0.1

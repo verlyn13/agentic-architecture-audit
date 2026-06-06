@@ -1,0 +1,53 @@
+# ---------------------------------------------------------------------------
+# Repo hygiene — line-ending normalization. Managed; see repo-hygiene standard.
+# `* text=auto eol=lf` makes git store every text file with LF and check it
+# out with LF on every OS. This makes CRLF<->LF churn structurally impossible.
+# Do NOT hand-fix line endings; if a pure-EOL diff appears, discard it.
+# ---------------------------------------------------------------------------
+* text=auto eol=lf
+
+# Explicit text (belt-and-suspenders for common types)
+*.md     text eol=lf
+*.markdown text eol=lf
+*.txt    text eol=lf
+*.yaml   text eol=lf
+*.yml    text eol=lf
+*.json   text eol=lf
+*.toml   text eol=lf
+*.ini    text eol=lf
+*.cfg    text eol=lf
+*.py     text eol=lf
+*.sh     text eol=lf diff=bash
+*.bash   text eol=lf
+*.html   text eol=lf
+*.css    text eol=lf
+*.js     text eol=lf
+*.ts     text eol=lf
+*.cff    text eol=lf
+*.csv    text eol=lf
+*.sql    text eol=lf
+
+# Binary — never normalize, never text-diff
+*.png    binary
+*.jpg    binary
+*.jpeg   binary
+*.gif    binary
+*.ico    binary
+*.svg    text eol=lf
+*.webp   binary
+*.pdf    binary
+*.zip    binary
+*.gz     binary
+*.tar    binary
+*.7z     binary
+*.woff   binary
+*.woff2  binary
+*.ttf    binary
+*.otf    binary
+*.eot    binary
+*.db     binary
+*.sqlite binary
+*.xlsx   binary
+*.docx   binary
+*.pptx   binary
+*.mp4    binary

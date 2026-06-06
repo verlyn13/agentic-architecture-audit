@@ -1,0 +1,21 @@
+# Automated repo hygiene — single source of truth.
+# CI (.github/workflows/hygiene.yml) runs `pre-commit run --all-files`, so these
+# are enforced on every push whether or not you ran `pre-commit install` locally.
+# Optional local install:  pipx install pre-commit && pre-commit install
+minimum_pre_commit_version: "3.5.0"
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: mixed-line-ending
+        args: [--fix=lf]
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+      - id: check-yaml
+      - id: check-json
+      - id: check-toml
+      - id: check-merge-conflict
+      - id: check-case-conflict
+      - id: check-added-large-files
+        args: [--maxkb=10240]

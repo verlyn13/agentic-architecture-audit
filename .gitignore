@@ -1,0 +1,12 @@
+# macOS
+.DS_Store
+
+# Editor/OS cruft
+*~
+.idea/
+.vscode/
+
+# Audit/profile outputs are produced inside the *target* project, never here.
+# If you run this package against itself, keep generated artifacts out of git:
+/profile/
+/audit/

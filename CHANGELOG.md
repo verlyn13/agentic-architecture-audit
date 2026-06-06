@@ -1,0 +1,74 @@
+# Changelog
+
+All notable changes to this package are recorded here. The format is based on
+[Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the package follows
+[Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+The package version tracks the directive set as a whole. Each authority text also
+carries its own version inside its header. The versioning rule (see `MANIFEST.md`):
+a change to an authority text bumps the package **minor** or **major**; a
+companion-only edit bumps the **patch**.
+
+## [1.0.0] - 2026-06-06
+
+First public release. No code or directive behavior changed from the internal
+package; this release renames the files to stable names, reconciles the internal
+cross-references to those names, and adds the public-repo scaffolding (license,
+citation, manifest, examples, hygiene baseline).
+
+Contents at this release:
+
+- **Agentic Architecture Audit Specification v3.1** (2026-05-08) — `audit-spec.md`
+- **Project Profile Discovery Directive v1.3** (2026-05-23) — `profile-directive.md`
+- Companions — `companions/explainer.md`, `companions/kickoff-prompt.md`
+- Drift-control manifest — `MANIFEST.md`
+
+File renames from the internal package (content preserved):
+
+- `agentic-audit-spec-v3.md` → `audit-spec.md`
+- `project-profile-directive.md` → `profile-directive.md`
+- `audit-spec-friendly-explainer.md` → `companions/explainer.md`
+- `audit-kickoff-prompt.md` → `companions/kickoff-prompt.md`
+- `audit-directive-set-manifest.md` → `MANIFEST.md`
+
+## Authority-text lineage
+
+The package's first public version is 1.0.0, but the authority texts have their own
+history. The relevant lineage carried into this release:
+
+### Project Profile Discovery Directive — v1.2 → v1.3 (2026-05-23)
+
+Validation clarifications only; no schema fields added or removed, so a v1.2 snapshot
+needs no field migration. The audit specification was unaffected and stayed at v3.1.
+
+- Citation fidelity is enforced: a cited `evidence` excerpt that names a symbol or
+  quotes text must actually appear at the cited lines, and a single-line citation must
+  point at the named construct, not an adjacent comment, import, or enclosing block.
+- Phase H performs a content-level evidence check, not just path-exists/range-in-bounds,
+  and records the verification method and any corrected mismatches.
+- Dependency versions are reconciled from lockfiles when a lockfile is in scope, rather
+  than cited as manifest ranges.
+- `model_providers[].access_via` is checked for consistency with the hosted/local
+  authority baseline, with added guidance for mapping local model execution onto the enum.
+
+Prompted by a real first-profile run that passed path/range validation yet still shipped
+two evidence excerpts naming classes absent at the cited lines and one off-by-many line
+number — the exact failure mode the audit's "do not trust profile claims" rule exists
+to catch downstream, now also caught upstream at profile time.
+
+### Agentic Architecture Audit Specification — v3.0 → v3.1 (2026-05-08)
+
+Preserves the v3 audit philosophy and adds targeted coverage for:
+
+- protocol-specific contract surfaces, especially MCP and A2A;
+- workflow descriptions, overlays, schema dialects, and protocol versions;
+- background, paused, resumable, durable, callback-mediated, and event-triggered execution;
+- authority matrices covering approval mode, precedence, bypass modes, protected paths,
+  secondary credentials, callbacks, hosted/local boundaries, and token delegation;
+- separate state and memory classes;
+- separate runtime/action, content, and build/source provenance classes;
+- semantic-convention version and stability pinning;
+- server-exposed prompts and privileged-context injection boundaries;
+- eval coverage for protocol surfaces, approval paths, async lifecycle, and memory lifecycle.
+
+[1.0.0]: https://github.com/verlyn13/agentic-architecture-audit/releases/tag/v1.0.0

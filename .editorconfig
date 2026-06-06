@@ -1,0 +1,21 @@
+# Editor-level consistency. Passive: any EditorConfig-aware editor obeys it
+# with no setup. Pairs with .gitattributes (git-side) + pre-commit (commit-side).
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 2
+
+[*.py]
+indent_size = 4
+
+[*.md]
+# Markdown uses two trailing spaces for hard line breaks — don't strip.
+trim_trailing_whitespace = false
+
+[Makefile]
+indent_style = tab
