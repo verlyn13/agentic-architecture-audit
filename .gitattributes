@@ -1,5 +1,5 @@
 # ---------------------------------------------------------------------------
-# Repo hygiene — line-ending normalization. Managed; see repo-hygiene standard.
+# Repo hygiene — line-ending normalization. Managed; see CLAUDE.md.
 # `* text=auto eol=lf` makes git store every text file with LF and check it
 # out with LF on every OS. This makes CRLF<->LF churn structurally impossible.
 # Do NOT hand-fix line endings; if a pure-EOL diff appears, discard it.
