@@ -44,6 +44,7 @@ New to this? Start with `companions/explainer.md`. It's the plain-language versi
 | [`LICENSE`](LICENSE) | Apache-2.0. |
 | [`examples/`](examples/README.md) | A real, public run of this audit. |
 | [`scripts/check_drift.py`](scripts/check_drift.py) | Drift linter (FF-004): companion/version consistency + link resolution, enforced in CI. |
+| [`.agents/skills/`](.agents/skills/run-agentic-audit/SKILL.md) | Portable cross-agent skill: run the audit (a thin wrapper that defers to the kickoff prompt). |
 
 The root holds exactly what has authority. `companions/` makes the authority/derived
 distinction physical — a core idea of the package itself.
