@@ -9,6 +9,24 @@ carries its own version inside its header. The versioning rule (see `MANIFEST.md
 a change to an authority text bumps the package **minor** or **major**; a
 companion-only edit bumps the **patch**.
 
+## [1.1.0] - 2026-06-07
+
+Cuts **Project Profile Discovery Directive v1.4** (was v1.3). Additive vocabulary change: adds a
+`documentation` value to the `project.kind` enum so documentation, specification, and methodology
+packages classify cleanly instead of being coerced to `library`. No schema fields added or removed
+and no validation behavior changed, so a v1.3 profile snapshot needs no migration.
+
+The Agentic Architecture Audit Specification is unaffected and stays at **v3.1**. Companions,
+`MANIFEST.md`, and `CITATION.cff` are synced to the new directive version; the FF-004 drift linter
+(`scripts/check_drift.py`) verifies the sync. This is a **minor** package bump (an authority-text
+change that is backward-compatible) per the versioning rule.
+
+### Project Profile Discovery Directive — v1.3 → v1.4 (2026-06-07)
+
+Additive: `project.kind` gains `documentation`. The gap was surfaced by running the audit on this
+package itself — a documentation/methodology package had no fitting `project.kind` value and was
+coerced to `library`.
+
 ## [1.0.0] - 2026-06-06
 
 First public release. No code or directive behavior changed from the internal
@@ -71,4 +89,5 @@ Preserves the v3 audit philosophy and adds targeted coverage for:
 - server-exposed prompts and privileged-context injection boundaries;
 - eval coverage for protocol surfaces, approval paths, async lifecycle, and memory lifecycle.
 
+[1.1.0]: https://github.com/verlyn13/agentic-architecture-audit/releases/tag/v1.1.0
 [1.0.0]: https://github.com/verlyn13/agentic-architecture-audit/releases/tag/v1.0.0
