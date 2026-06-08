@@ -34,7 +34,7 @@ New to this? Start with `companions/explainer.md`. It's the plain-language versi
 | File | Role |
 | --- | --- |
 | [`profile-directive.md`](profile-directive.md) | **Authority** — Project Profile Discovery Directive v1.4. Run first. |
-| [`audit-spec.md`](audit-spec.md) | **Authority** — Agentic Architecture Audit Specification v3.2. Run second. |
+| [`audit-spec.md`](audit-spec.md) | **Authority** — Agentic Architecture Audit Specification v3.3. Run second. |
 | [`AGENTS.md`](AGENTS.md) | Canonical, cross-agent instructions for working in this repo (`CLAUDE.md` imports it). |
 | [`companions/explainer.md`](companions/explainer.md) | Plain-language explanation of what the audit does. |
 | [`companions/kickoff-prompt.md`](companions/kickoff-prompt.md) | Copy/paste prompt for the audit agent. |
