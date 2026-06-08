@@ -21,6 +21,7 @@ an authority text, the authority text wins.**
 | --- | --- | --- |
 | `companions/kickoff-prompt.md` | Copy/paste operational prompt for audit agents | Audit Spec v3.1 and Profile Directive v1.3 |
 | `companions/explainer.md` | Operator-facing explainer | Audit Spec v3.1 and Profile Directive v1.3 |
+| `.agents/skills/run-agentic-audit/SKILL.md` | Cross-agent skill entry point for running the audit | Defers to `companions/kickoff-prompt.md` (no independent version) |
 
 ## Versioning
 
