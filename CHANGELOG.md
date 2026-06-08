@@ -9,6 +9,30 @@ carries its own version inside its header. The versioning rule (see `MANIFEST.md
 a change to an authority text bumps the package **minor** or **major**; a
 companion-only edit bumps the **patch**.
 
+## [Unreleased]
+
+Resolves the three remaining findings from the 2026-06-08 self-audit. **Patch**-level:
+companions, tooling, and governance only — no authority text changes, so the authority
+versions (Audit Spec v3.3, Profile Directive v1.4) are unchanged.
+
+### Changed
+
+- Drift linter (`scripts/check_drift.py`): the section-reference check now resolves each
+  reference against the **specific** authority text its line names, instead of accepting
+  any number present in either text. This closes self-audit **F-001** (FF-001), where a
+  reference attributed to the profile directive but naming an audit-spec-only section
+  passed. Correctly-attributed and unattributed references are unaffected.
+
+### Added
+
+- `scripts/check_drift.py --self-test`, wired as its own pre-commit hook, locks in the
+  FF-001 negative test so the F-001 regression cannot return silently.
+- `CONTRIBUTING.md` and `SECURITY.md` (self-audit **F-003** / FF-003): contribution and
+  release workflow, and security scope with private vulnerability reporting.
+- A release-provenance verification discipline (self-audit **F-002** / FF-002),
+  documented in `CONTRIBUTING.md` and pointed to from `MANIFEST.md`: release claims must
+  separate repo-local, GitHub-hosted, and unavailable evidence lanes.
+
 ## [1.3.0] - 2026-06-08
 
 Cuts **Agentic Architecture Audit Specification v3.3** (was v3.2). Additive: adds the
@@ -130,6 +154,7 @@ Preserves the v3 audit philosophy and adds targeted coverage for:
 - server-exposed prompts and privileged-context injection boundaries;
 - eval coverage for protocol surfaces, approval paths, async lifecycle, and memory lifecycle.
 
+[Unreleased]: https://github.com/verlyn13/agentic-architecture-audit/compare/v1.3.0...HEAD
 [1.3.0]: https://github.com/verlyn13/agentic-architecture-audit/releases/tag/v1.3.0
 [1.2.0]: https://github.com/verlyn13/agentic-architecture-audit/releases/tag/v1.2.0
 [1.1.0]: https://github.com/verlyn13/agentic-architecture-audit/releases/tag/v1.1.0
