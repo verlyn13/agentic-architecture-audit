@@ -21,8 +21,10 @@ version-lineage sections or on CHANGELOG.md history):
   4. No conflicting versions      — in consumer files (companions, MANIFEST, README), every
      v3.x token equals the spec version and every v1.x token the directive version.
   5. No stale filenames           — the pre-rename filenames appear only in CHANGELOG.md.
-  6. Section refs resolve         — §N / §N.N prose references resolve to a
-     numeric heading in the authority texts.
+  6. Section refs resolve         — §N / §N.N prose references resolve to a numeric
+     heading; when a line names exactly one authority text, the ref must resolve
+     against THAT text (so `profile directive §11.12` fails — §11.12 is an audit-spec
+     section). Self-checkable with `--self-test`.
   7. Phase labels are attributed  — lettered profile phases are not described
      as audit phases.
   8. Links resolve                — repo-relative Markdown links and CLAUDE.md @imports point
@@ -58,6 +60,18 @@ OLD_FILENAMES = [
 SECTION_REF_IGNORE = "drift-check: ignore-section-ref"
 SECTION_REF_RE = re.compile(r"§\s*(\d+(?:\.\d+)?)")
 SECTION_HEADING_RE = re.compile(r"^#{1,6}\s+(?:Phase\s+)?(\d+(?:\.\d+)?)(?=[\s.`—–-]|$)")
+# Authority names as written in prose, used to bind a §-reference to the specific
+# authority it cites (FF-001). Deliberately matches only the CANONICAL identifiers:
+# `audit[\s-]spec` (also "Audit Specification") and `profile[\s-]?directive` (also the
+# `*-directive.md` filename). Ambiguous short forms ("the spec", "the directive") and the
+# long form "Project Profile Discovery Directive" do NOT match and fall through to the
+# merged existence check — by design: the bare word "directive" appears next to spec
+# §-refs in audit-spec.md's own lineage/changelog prose, so binding on it would
+# false-positive and break the gate. The intended fallback is pinned in self_test().
+AUTHORITY_NAME_RE = {
+    "audit-spec.md": re.compile(r"audit[\s-]spec", re.I),
+    "profile-directive.md": re.compile(r"profile[\s-]?directive", re.I),
+}
 AUDIT_LETTER_PHASE_RE = re.compile(r"\baudit(?:'s)?\s+Phase\s+([A-I])\b", re.I)
 
 failures: list[str] = []
@@ -155,30 +169,54 @@ def check_5_old_filenames() -> None:
                 fail("5-rename", f"{rel} references pre-rename filename {old!r} (allowed only in CHANGELOG.md)")
 
 
-def authority_sections() -> set[str]:
-    sections: set[str] = set()
+def authority_sections() -> dict[str, set[str]]:
+    """Per-authority numeric heading sets, plus their merged union (`__merged__`)."""
+    out: dict[str, set[str]] = {}
     for rel in ("audit-spec.md", "profile-directive.md"):
+        secs: set[str] = set()
         for line in read(rel).splitlines():
             m = SECTION_HEADING_RE.match(line)
             if m:
-                sections.add(m.group(1))
-    return sections
+                secs.add(m.group(1))
+        out[rel] = secs
+    out["__merged__"] = out["audit-spec.md"] | out["profile-directive.md"]
+    return out
+
+
+def unresolved_section_refs(line: str, sections: dict[str, set[str]]) -> list[tuple[str, str]]:
+    """§-references on `line` that do not resolve, as (section, authority-label) pairs.
+
+    If the line names exactly one authority text, every §-reference on it must resolve
+    against THAT text's headings — so `profile directive §11.12` is caught, because
+    §11.12 exists only in `audit-spec.md` (FF-001). If the line names both authorities
+    or neither, fall back to existence across the merged set (the prior behavior); that
+    keeps correctly-attributed lines such as `§11.12 of audit-spec.md` and bare refs
+    green. Lines carrying the ignore marker are skipped entirely.
+    """
+    if SECTION_REF_IGNORE in line:
+        return []
+    named = [rel for rel, rx in AUTHORITY_NAME_RE.items() if rx.search(line)]
+    if len(named) == 1:
+        valid, label = sections[named[0]], named[0]
+    else:
+        valid, label = sections["__merged__"], "either authority text"
+    return [
+        (m.group(1), label)
+        for m in SECTION_REF_RE.finditer(line)
+        if m.group(1) not in valid
+    ]
 
 
 def check_6_section_refs_resolve() -> None:
-    valid = authority_sections()
-    if not valid:
+    sections = authority_sections()
+    if not sections["__merged__"]:
         fail("6-section", "could not extract any numeric authority headings")
         return
 
     for rel in tracked_files("*.md", "**/*.md"):
         for lineno, line in enumerate(read(rel).splitlines(), start=1):
-            if SECTION_REF_IGNORE in line:
-                continue
-            for m in SECTION_REF_RE.finditer(line):
-                section = m.group(1)
-                if section not in valid:
-                    fail("6-section", f"{rel}:{lineno} references unresolved section §{section}")
+            for section, label in unresolved_section_refs(line, sections):
+                fail("6-section", f"{rel}:{lineno} references §{section}, which is not a section of {label}")
 
 
 def check_7_phase_labels() -> None:
@@ -214,7 +252,47 @@ def check_8_links_resolve() -> None:
                 fail("8-link", f"{rel}: @import does not resolve -> {m}")
 
 
+def self_test() -> int:
+    """In-memory checks for the authority-aware §-reference resolver (FF-001).
+
+    Guards the F-001 regression directly: a §-reference attributed to one authority
+    text but naming a section that exists only in the other must be caught, while
+    correctly-attributed, bare, ambiguous, and ignore-marked references must pass.
+    Wired into pre-commit as its own hook so the negative test can never silently rot.
+    """
+    sections = {
+        "audit-spec.md": {"0", "10", "11.3", "11.6", "11.12"},
+        "profile-directive.md": {"0", "5", "11", "13"},
+    }
+    sections["__merged__"] = sections["audit-spec.md"] | sections["profile-directive.md"]
+    cases = [
+        ("the profile directive §11.12 mapping", True, "wrong-authority: spec-only section cited as directive"),
+        ("the default mapping from §11.12 of `audit-spec.md`", False, "real consumer line; spec section, spec named"),
+        ("audit spec §13 is the rule", True, "wrong-authority: directive-only section cited as spec"),
+        ("a bare §11.12 reference", False, "no authority named -> merged fallback"),
+        ("profile directive §13 says so", False, "directive section, directive named"),
+        ("profile directive §11.12 and audit-spec.md §11.12", False, "both named -> merged fallback"),
+        ("this cites §99.9, which is nowhere", True, "genuinely unresolved section"),
+        ("keep §11.12 here  drift-check: ignore-section-ref", False, "explicit ignore marker"),
+        # Pinned intentional boundaries: ambiguous short forms and the long-form name are
+        # NOT bound to an authority — they fall through to the merged existence check.
+        ("the directive §11.12 mapping", False, "short form 'the directive' is ambiguous -> merged fallback (intentional)"),
+        ("the spec §13 says so", False, "short form 'the spec' is ambiguous -> merged fallback (intentional)"),
+        ("Project Profile Discovery Directive §11.12", False, "long-form name not bound -> merged fallback (intentional)"),
+    ]
+    ok = True
+    for line, expect, note in cases:
+        flagged = bool(unresolved_section_refs(line, sections))
+        if flagged != expect:
+            ok = False
+        print(f"  [{'PASS' if flagged == expect else 'FAIL'}] expect={expect!s:5} got={flagged!s:5} :: {note}")
+    print("FF-001 self-test PASSED" if ok else "FF-001 self-test FAILED")
+    return 0 if ok else 1
+
+
 def main() -> int:
+    if "--self-test" in sys.argv:
+        return self_test()
     authority = parse_authority()
     if authority["spec_ver"] and authority["dir_ver"]:
         print(
