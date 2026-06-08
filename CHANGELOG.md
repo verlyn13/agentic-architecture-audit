@@ -9,6 +9,27 @@ carries its own version inside its header. The versioning rule (see `MANIFEST.md
 a change to an authority text bumps the package **minor** or **major**; a
 companion-only edit bumps the **patch**.
 
+## [1.2.0] - 2026-06-07
+
+Cuts **Agentic Architecture Audit Specification v3.2** (was v3.1). Additive change: recognizes
+`AGENTS.md` as the canonical cross-agent instruction standard, with tool-specific files
+(`CLAUDE.md`, `GEMINI.md`, `.cursor/rules`) treated as bridges that should import or defer to it.
+Phase 4 now inventories this cross-agent instruction contract and flags `cross-agent-instruction-drift`;
+the Contract schema (§8.5) and Contract-discipline rubric (§11.3) gain the corresponding surface, flag,
+and scoring language.
+
+No phase was removed and no behavior changed for existing surfaces, so v3.1 audits remain valid. The
+Profile Directive stays at **v1.4** and its profiles are consumed unchanged — its spec references are
+left at their v3.1 baseline, which is additively compatible. Companions, `MANIFEST.md`, and
+`CITATION.cff` are synced; the FF-004 drift linter verifies the sync. **Minor** package bump per the
+versioning rule.
+
+### Agentic Architecture Audit Specification — v3.1 → v3.2 (2026-06-07)
+
+Additive: first-class cross-agent instruction contract handling. Surfaced by F-007 from running the
+audit on this package itself — the spec had treated `AGENTS.md` as interchangeable governance rather
+than the AAIF/Linux-Foundation canonical standard with a canonical↔bridge structure.
+
 ## [1.1.0] - 2026-06-07
 
 Cuts **Project Profile Discovery Directive v1.4** (was v1.3). Additive vocabulary change: adds a
@@ -89,5 +110,6 @@ Preserves the v3 audit philosophy and adds targeted coverage for:
 - server-exposed prompts and privileged-context injection boundaries;
 - eval coverage for protocol surfaces, approval paths, async lifecycle, and memory lifecycle.
 
+[1.2.0]: https://github.com/verlyn13/agentic-architecture-audit/releases/tag/v1.2.0
 [1.1.0]: https://github.com/verlyn13/agentic-architecture-audit/releases/tag/v1.1.0
 [1.0.0]: https://github.com/verlyn13/agentic-architecture-audit/releases/tag/v1.0.0

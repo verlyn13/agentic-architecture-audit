@@ -1,10 +1,10 @@
-# Agentic Architecture Audit — Agent Specification v3.1
+# Agentic Architecture Audit — Agent Specification v3.2
 
-**Version:** v3.1
-**Specification date:** 2026-05-08
+**Version:** v3.2
+**Specification date:** 2026-06-07
 **Status:** Operator-to-agent instruction document
 **Scope:** Project-agnostic and tooling-agnostic
-**Lineage:** Supersedes Agentic Architecture Audit Specification v3.0. Preserves the v3 operating model while adding protocol-aware contract inventory, authority-matrix handling, execution-mode taxonomy, state/provenance separation, semantic-convention stability pinning, and companion-artifact drift controls.
+**Lineage:** Supersedes Agentic Architecture Audit Specification v3.1. Preserves all v3.1 behavior while adding first-class handling of the cross-agent instruction contract: `AGENTS.md` is recognized as the canonical, tool-agnostic instruction standard, with tool-specific files (`CLAUDE.md`, `GEMINI.md`, `.cursor/rules`) treated as bridges that should import or defer to it; Phase 4 inventories that relationship and flags divergence. This is an additive change — v3.1 audits remain valid, and the Project Profile Discovery Directive (v1.4) is consumed unchanged.
 
 ---
 
@@ -171,7 +171,7 @@ This model is a reference for classification and scoring. It is not a mandate to
 1. **Domain.** Invariants, policies, value objects, domain services, domain events. Pure with respect to transport, persistence, UI, and provider SDKs.
 2. **Application.** Use cases and workflows. Coordinates domain, adapters, transactions, authorization checks, idempotency, and side effects.
 3. **Agent or automation runtime.** Model calls, tool selection, handoffs, loop control, guardrails, prompt assembly, planner/executor behavior, subagent dispatch, human approval checkpoints, and automation-policy routing.
-4. **Contracts.** Machine-readable definitions for externally visible interfaces: HTTP, RPC, events, tools, resources, prompts, config, persisted records, retrieval metadata, plugin or extension manifests, OpenAPI/Arazzo/Overlay-style API and workflow descriptions, MCP tools/resources/resource templates/prompts/roots/sampling/elicitation metadata, A2A Agent Cards/skills/task-state contracts, callback or notification schemas, public SDK surfaces, and provenance manifests for agentic outputs.
+4. **Contracts.** Machine-readable definitions for externally visible interfaces: HTTP, RPC, events, tools, resources, prompts, config, persisted records, retrieval metadata, plugin or extension manifests, OpenAPI/Arazzo/Overlay-style API and workflow descriptions, MCP tools/resources/resource templates/prompts/roots/sampling/elicitation metadata, A2A Agent Cards/skills/task-state contracts, callback or notification schemas, public SDK surfaces, cross-agent instruction contracts (a canonical `AGENTS.md` plus tool-specific bridge files), and provenance manifests for agentic outputs.
 5. **Adapters.** Driving and driven integrations: routers, CLIs, workers, UI/API gateways, databases, queues, filesystems, cloud APIs, model providers, external services, device interfaces, retrieval indices, browser-use harnesses, computer-use sandboxes, and durable-workflow workers.
 6. **State, memory, and artifacts.** Request-local state, session state, durable conversation state, long-term memory, retrieval corpora, retrieval indexes, generated artifacts, logs, evaluation datasets, checkpoint state, operator-authored persistent rules/memory, and operator decisions.
 7. **Authority and governance.** Approval policies, approval-mode precedence, bypass/auto-approval modes, capability scopes, secrets, secondary credential paths, callback/webhook authentication, workspace roots, ADRs, rules, risk controls, access boundaries, and audit trail.
@@ -235,7 +235,7 @@ A `mixed` classification requires citations for each mixed concern.
 - A "service" that orchestrates and performs I/O is `application` — the I/O belongs in an adapter.
 - A router that validates business rules is `interface` — the rules belong in `domain` or `application`.
 - A subagent definition is `agent-runtime`; the subagent's tool implementations are `adapter` or `application` per their primary work.
-- A SKILL.md / AGENTS.md / CLAUDE.md file is `governance`. A prompt template referenced from one is `agent-runtime`.
+- A SKILL.md / AGENTS.md / CLAUDE.md file is `governance`. Among instruction files, `AGENTS.md` is the canonical cross-agent source; tool-specific files (`CLAUDE.md`, `GEMINI.md`, `.cursor/rules`) are bridges that should import or defer to it. The canonical↔bridge relationship is inventoried as a cross-agent instruction contract in Phase 4. A prompt template referenced from one is `agent-runtime`.
 - Test code is classified by the subject under test, tagged `kind:test`.
 
 ### 6.4 Secondary tags
@@ -464,6 +464,7 @@ Locate externally visible and internally relied-upon contracts:
 - MCP tools, resources, resource templates, prompts, roots exposure, sampling support, elicitation support, completion support, and authorization metadata;
 - prompt manifests and parameter schemas;
 - configuration schemas;
+- cross-agent instruction contracts (a canonical `AGENTS.md` and the tool-specific bridge files — `CLAUDE.md`, `GEMINI.md`, `.cursor/rules` — that should import or defer to it);
 - database migration contracts and persisted document formats;
 - retrieval chunk metadata;
 - SDK/API public surface;
@@ -488,6 +489,7 @@ Flag:
 - schema drift between producer and consumer;
 - duplicate contract names;
 - public SDK shape not represented as a contract;
+- cross-agent instruction drift: a tooling-agnostic project that ships only tool-specific instruction files with no canonical `AGENTS.md`, or bridge files that contradict or silently duplicate `AGENTS.md` instead of importing or deferring to it;
 - prompt arguments without schema;
 - MCP surface without separately recorded contract object;
 - A2A Agent Card or skill without auth/capability/task-state contract;
@@ -518,6 +520,7 @@ Flag:
 - Every MCP or A2A surface has its protocol object inventoried separately or a missing-contract flag.
 - Every public interface has producer and consumer evidence or an explicit `consumer-unknown` flag.
 - Every subagent boundary has a typed message contract or a flag.
+- Every cross-agent instruction surface resolves to a canonical `AGENTS.md` with consistent bridges, or carries a cross-agent-instruction-drift flag.
 
 ---
 
@@ -1159,7 +1162,7 @@ The audit produces fully valid JSON. Fragments below define the required shape. 
   "properties": {
     "name": {"type": "string"},
     "format": {"enum": ["openapi", "arazzo", "overlay", "json-schema", "protobuf", "graphql", "idl", "zod", "pydantic", "typescript", "kotlin", "go-type", "python-type", "rust-type", "mcp-manifest", "a2a-agent-card", "workflow-description", "provenance-attestation", "ad-hoc", "other"]},
-    "surface": {"enum": ["http", "rpc", "event", "workflow", "tool", "resource", "resource-template", "root", "sampling", "elicitation", "completion", "prompt", "config", "persisted-format", "retrieval-metadata", "sdk", "file", "device", "policy", "a2a", "agent-card", "skill", "task-state", "subagent", "callback", "provenance-runtime-action", "provenance-content", "provenance-build-source", "other"]},
+    "surface": {"enum": ["http", "rpc", "event", "workflow", "tool", "resource", "resource-template", "root", "sampling", "elicitation", "completion", "prompt", "config", "persisted-format", "retrieval-metadata", "sdk", "file", "device", "policy", "a2a", "agent-card", "skill", "task-state", "subagent", "callback", "provenance-runtime-action", "provenance-content", "provenance-build-source", "cross-agent-instruction", "other"]},
     "location": {"type": "string"},
     "versioning": {"enum": ["semver", "hash", "date", "schema-version", "none", "unknown"]},
     "schema_dialect": {"type": "string"},
@@ -1170,7 +1173,7 @@ The audit produces fully valid JSON. Fragments below define the required shape. 
     "consumers": {"type": "array", "items": {"type": "string"}},
     "validation": {"type": "string"},
     "compatibility_policy": {"type": "string"},
-    "flags": {"type": "array", "items": {"enum": ["route-without-spec", "tool-without-schema", "event-without-payload", "config-without-validation", "version-drift", "duplicate-name", "producer-consumer-drift", "sdk-surface-uncontracted", "prompt-args-without-schema", "mcp-surface-uninventoried", "a2a-card-without-auth", "a2a-task-contract-missing", "workflow-overlay-unlinked", "callback-schema-missing", "subagent-boundary-untyped", "retrieval-chunk-untyped", "runtime-provenance-missing", "content-provenance-position-missing", "build-provenance-position-missing", "provenance-missing"]}},
+    "flags": {"type": "array", "items": {"enum": ["route-without-spec", "tool-without-schema", "event-without-payload", "config-without-validation", "version-drift", "duplicate-name", "producer-consumer-drift", "sdk-surface-uncontracted", "prompt-args-without-schema", "mcp-surface-uninventoried", "a2a-card-without-auth", "a2a-task-contract-missing", "workflow-overlay-unlinked", "callback-schema-missing", "subagent-boundary-untyped", "retrieval-chunk-untyped", "runtime-provenance-missing", "content-provenance-position-missing", "build-provenance-position-missing", "cross-agent-instruction-drift", "provenance-missing"]}},
     "citations": {"type": "array", "items": {"$ref": "#/$defs/Citation"}}
   }
 }
@@ -1595,7 +1598,7 @@ Score each dimension 0–3 with evidence. Aggregate score is informational; the 
 - 0: External interfaces are mostly ad hoc.
 - 1: Partial schema coverage; producer/consumer or validation unclear.
 - 2: Most external interfaces are schema-defined; versioning, compatibility, protocol object separation, or workflow-overlay linkage is inconsistent.
-- 3: Interfaces (HTTP, RPC, workflow descriptions, overlays, MCP tools/resources/prompts/roots, A2A Agent Cards/skills/tasks, subagents, callbacks, provenance) are machine-defined, versioned, validated, and diff-gated.
+- 3: Interfaces (HTTP, RPC, workflow descriptions, overlays, MCP tools/resources/prompts/roots, A2A Agent Cards/skills/tasks, subagents, callbacks, provenance, cross-agent instruction contracts) are machine-defined, versioned, validated, and diff-gated.
 
 ### 11.4 Tool/action surface clarity
 
@@ -1808,7 +1811,7 @@ Per-step boundaries are declared inline at each phase. The following apply globa
 
 ## 16. Versioning
 
-This specification is **v3.1** dated 2026-05-08.
+This specification is **v3.2** dated 2026-06-07.
 
 Breaking changes bump the major version. Additive schema fields, additional examples, or clarification of existing behavior bump the minor version. Patch versions correct wording without changing behavior.
 
@@ -1857,6 +1860,13 @@ Changes from v3.0:
 - Added protocol, approval, async lifecycle, and memory lifecycle eval coverage flags.
 - Added companion-artifact drift controls for kickoff prompts, friendly explainers, manifests, examples, and other derived guidance.
 
+Changes from v3.1:
+
+- Added first-class handling of the **cross-agent instruction contract**: `AGENTS.md` is recognized as the canonical, tool-agnostic instruction standard, with `CLAUDE.md`/`GEMINI.md`/`.cursor/rules` as bridges that should import or defer to it (§5.1, §6.3).
+- Phase 4 now inventories the canonical↔bridge relationship and flags `cross-agent-instruction-drift` (a tooling-agnostic project with no canonical `AGENTS.md`, or bridges that diverge from or duplicate it).
+- Added the `cross-agent-instruction` surface and `cross-agent-instruction-drift` flag to the Contract schema (§8.5), and added cross-agent instruction contracts to the Contract-discipline rubric (§11.3).
+- Additive only: v3.1 audits remain valid; the Profile Directive (v1.4) is unaffected and its profiles are consumed unchanged.
+
 ## Appendix A — Migration from v2 to v3.x
 
 For projects with a v2 audit cycle on file:
@@ -1880,3 +1890,14 @@ For projects with a v3.0 audit cycle on file:
 3. In Phase 0, record v3.0-to-v3.1 drift separately from code drift.
 4. Re-run Phases 3–8 and 9 for any project exposing MCP, A2A, background/resumable execution, server-exposed prompts, or durable memory.
 5. Re-score Phases 10 and 10.5 only after protocol surfaces, authority matrix, memory classes, semconv stability, and provenance classes have been pinned or marked not applicable.
+
+---
+
+## Appendix C — Migration from v3.1 to v3.2
+
+For projects with a v3.1 audit cycle on file:
+
+1. Preserve the v3.1 audit artifacts as the historical record.
+2. Re-run Phase 4 to inventory the cross-agent instruction contract: confirm a canonical `AGENTS.md` exists and that any tool-specific files (`CLAUDE.md`, `GEMINI.md`, `.cursor/rules`) import or defer to it rather than diverging.
+3. Flag `cross-agent-instruction-drift` where a tooling-agnostic project ships only tool-specific instructions, or where bridges duplicate or contradict the canonical file.
+4. No other phase changes; v3.1 findings remain valid, and the Profile Directive (v1.4) is consumed unchanged.
