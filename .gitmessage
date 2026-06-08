@@ -1,0 +1,12 @@
+# <type>(<scope>): <subject>        # <= ~72 chars, imperative mood
+#   type: feat | fix | docs | refactor | chore | ci | test | perf | style
+#
+# Why (not what):
+#
+#
+# Refs / findings / BREAKING CHANGE:
+#
+# ---------------------------------------------------------------------------
+# Reminders (AGENTS.md): Conventional Commits, signed. Never --no-verify.
+# Authority-text change => bump its header version + MANIFEST.md + CHANGELOG.md.
+# Work on a branch + PR; never push to main directly.
