@@ -53,4 +53,8 @@ Before publishing a new package revision:
 5. If an authority text changes behavior, update this manifest, the companions, and
    `CHANGELOG.md` in the same revision.
 
+Steps 1–3 and cross-reference resolution are **automated** by `scripts/check_drift.py`, a
+pre-commit hook that also runs in CI (the hygiene workflow runs `pre-commit run --all-files`).
+Steps 4–5 remain human review.
+
 This package is expected to pass its own audit's Phase D (conventions) drift check.

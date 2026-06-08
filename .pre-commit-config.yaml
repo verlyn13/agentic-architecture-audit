@@ -19,3 +19,14 @@ repos:
       - id: check-case-conflict
       - id: check-added-large-files
         args: [--maxkb=10240]
+
+  # Local: FF-004 companion/version drift linter (automates the MANIFEST.md drift check).
+  # Whole-repo consistency check, so it always runs regardless of which files changed.
+  - repo: local
+    hooks:
+      - id: drift-check
+        name: companion/version drift check (FF-004)
+        entry: python3 scripts/check_drift.py
+        language: system
+        pass_filenames: false
+        always_run: true
