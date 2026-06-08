@@ -21,7 +21,11 @@ version-lineage sections or on CHANGELOG.md history):
   4. No conflicting versions      — in consumer files (companions, MANIFEST, README), every
      v3.x token equals the spec version and every v1.x token the directive version.
   5. No stale filenames           — the pre-rename filenames appear only in CHANGELOG.md.
-  6. Links resolve                — repo-relative Markdown links and CLAUDE.md @imports point
+  6. Section refs resolve         — §N / §N.N prose references resolve to a
+     numeric heading in the authority texts.
+  7. Phase labels are attributed  — lettered profile phases are not described
+     as audit phases.
+  8. Links resolve                — repo-relative Markdown links and CLAUDE.md @imports point
      at files that exist.
 
 Exit 0 = clean; exit 1 = drift found (each failure is printed). Stdlib only.
@@ -51,6 +55,11 @@ OLD_FILENAMES = [
     "audit-directive-set-manifest.md",
 ]
 
+SECTION_REF_IGNORE = "drift-check: ignore-section-ref"
+SECTION_REF_RE = re.compile(r"§\s*(\d+(?:\.\d+)?)")
+SECTION_HEADING_RE = re.compile(r"^#{1,6}\s+(?:Phase\s+)?(\d+(?:\.\d+)?)(?=[\s.`—–-]|$)")
+AUDIT_LETTER_PHASE_RE = re.compile(r"\baudit(?:'s)?\s+Phase\s+([A-I])\b", re.I)
+
 failures: list[str] = []
 
 
@@ -69,9 +78,9 @@ def tracked_files(*globs: str) -> list[str]:
             ["git", "ls-files", "--", *globs],
             cwd=REPO, capture_output=True, text=True, check=True,
         ).stdout
-        return [line for line in out.splitlines() if line]
+        return list(dict.fromkeys(line for line in out.splitlines() if line))
     except Exception:  # pragma: no cover - fallback if git is unavailable
-        return [str(p.relative_to(REPO)) for g in globs for p in REPO.glob(g)]
+        return list(dict.fromkeys(str(p.relative_to(REPO)) for g in globs for p in REPO.glob(g)))
 
 
 def parse_authority() -> dict[str, str]:
@@ -146,7 +155,45 @@ def check_5_old_filenames() -> None:
                 fail("5-rename", f"{rel} references pre-rename filename {old!r} (allowed only in CHANGELOG.md)")
 
 
-def check_6_links_resolve() -> None:
+def authority_sections() -> set[str]:
+    sections: set[str] = set()
+    for rel in ("audit-spec.md", "profile-directive.md"):
+        for line in read(rel).splitlines():
+            m = SECTION_HEADING_RE.match(line)
+            if m:
+                sections.add(m.group(1))
+    return sections
+
+
+def check_6_section_refs_resolve() -> None:
+    valid = authority_sections()
+    if not valid:
+        fail("6-section", "could not extract any numeric authority headings")
+        return
+
+    for rel in tracked_files("*.md", "**/*.md"):
+        for lineno, line in enumerate(read(rel).splitlines(), start=1):
+            if SECTION_REF_IGNORE in line:
+                continue
+            for m in SECTION_REF_RE.finditer(line):
+                section = m.group(1)
+                if section not in valid:
+                    fail("6-section", f"{rel}:{lineno} references unresolved section §{section}")
+
+
+def check_7_phase_labels() -> None:
+    for rel in tracked_files("*.md", "**/*.md"):
+        for lineno, line in enumerate(read(rel).splitlines(), start=1):
+            m = AUDIT_LETTER_PHASE_RE.search(line)
+            if m:
+                fail(
+                    "7-phase",
+                    f"{rel}:{lineno} attributes lettered Phase {m.group(1).upper()} to the audit; "
+                    "lettered phases belong to the profile directive",
+                )
+
+
+def check_8_links_resolve() -> None:
     link_re = re.compile(r"\]\(([^)]+)\)")
     for rel in tracked_files("*.md"):
         base = (REPO / rel).parent
@@ -159,12 +206,12 @@ def check_6_links_resolve() -> None:
             if not path:
                 continue
             if not (base / path).exists():
-                fail("6-link", f"{rel}: broken repo-relative link -> {target}")
+                fail("8-link", f"{rel}: broken repo-relative link -> {target}")
     # CLAUDE.md @imports
     for rel in tracked_files("CLAUDE.md", "**/CLAUDE.md"):
         for m in re.findall(r"^@(\S+)", read(rel), re.M):
             if not (REPO / m).exists():
-                fail("6-link", f"{rel}: @import does not resolve -> {m}")
+                fail("8-link", f"{rel}: @import does not resolve -> {m}")
 
 
 def main() -> int:
@@ -179,7 +226,9 @@ def main() -> int:
     check_3_current_targets(authority)
     check_4_no_conflicting_versions(authority)
     check_5_old_filenames()
-    check_6_links_resolve()
+    check_6_section_refs_resolve()
+    check_7_phase_labels()
+    check_8_links_resolve()
 
     if failures:
         print(f"\nFF-004 drift check FAILED — {len(failures)} issue(s):")
