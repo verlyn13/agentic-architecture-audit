@@ -1,0 +1,17 @@
+# Code owners — GitHub auto-requests review from these owners on matching paths.
+# Pairs with the branch + PR workflow in AGENTS.md so authority-text and governance
+# changes get a deliberate review rather than a casual edit.
+
+# Default owner for everything.
+*                       @verlyn13
+
+# Authority texts and the drift-control spine — change only as deliberate events.
+/audit-spec.md          @verlyn13
+/profile-directive.md   @verlyn13
+/MANIFEST.md            @verlyn13
+/CHANGELOG.md           @verlyn13
+
+# Cross-agent + tool instructions and the agent config layer.
+/AGENTS.md              @verlyn13
+/CLAUDE.md              @verlyn13
+/.claude/               @verlyn13

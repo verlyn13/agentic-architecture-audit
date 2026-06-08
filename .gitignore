@@ -6,6 +6,9 @@
 .idea/
 .vscode/
 
+# Local, personal agent settings — never committed (shared settings live in .claude/settings.json)
+.claude/settings.local.json
+
 # Audit/profile outputs are produced inside the *target* project, never here.
 # If you run this package against itself, keep generated artifacts out of git:
 /profile/
