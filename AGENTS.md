@@ -40,7 +40,7 @@ There is no build, install step, or test suite. The single quality gate is repo 
    (`companions/kickoff-prompt.md`, `companions/explainer.md`). Keep it consistent —
    inconsistency is exactly the drift this package teaches you to catch.
 4. **The YAML schema identifiers are not filenames.** In `profile-directive.md`,
-   `directive_version: "project-profile-directive-v1.3"` and
+   `directive_version: "project-profile-directive-v1.4"` and
    `audit_spec_target: "agentic-audit-spec-v3.1"` are version identifiers emitted into a profile
    snapshot. Do **not** rename them to match the published filenames.
 5. **Runtime outputs are not repo files.** A real run writes `profile/<date>/...` and

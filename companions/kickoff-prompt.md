@@ -1,6 +1,6 @@
 # Audit Kickoff Prompt — Copy/Paste to Your Coding Agent
 
-**Derived guidance targets:** Agentic Architecture Audit Specification v3.1 (2026-05-08) and Project Profile Discovery Directive v1.3 (2026-05-23). If this prompt conflicts with the full spec, the full spec wins.
+**Derived guidance targets:** Agentic Architecture Audit Specification v3.1 (2026-05-08) and Project Profile Discovery Directive v1.4 (2026-06-07). If this prompt conflicts with the full spec, the full spec wins.
 
 ```
 You are running the Agentic Architecture Audit per the v3.1 specification at
@@ -35,7 +35,7 @@ If `project_profile.yaml` is MISSING, halt immediately. Do NOT attempt to
 discover the project yourself — that is the profile directive's job, not the
 audit's. Tell the operator: "Profile snapshot missing at `profile/<date>/`.
 Run `profile-directive.md` using Project Profile Discovery Directive
-v1.3 first, then re-invoke this audit."
+v1.4 first, then re-invoke this audit."
 
 If the profile exists but is older than 7 days OR predates significant code
 changes, recommend a profile refresh before proceeding, but do not block.

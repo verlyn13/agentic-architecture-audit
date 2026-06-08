@@ -1,10 +1,10 @@
-# Project Profile Discovery Directive v1.3
+# Project Profile Discovery Directive v1.4
 
-**Version:** v1.3
-**Directive date:** 2026-05-23
+**Version:** v1.4
+**Directive date:** 2026-06-07
 **Status:** Operator-to-agent instruction document
 **Scope:** Project-agnostic and tooling-agnostic
-**Lineage:** Supersedes Project Profile Discovery Directive v1.2. Preserves the dated-snapshot model and all v1.2 fields while hardening citation fidelity (the cited excerpt/symbol must actually appear at the cited lines, not merely a valid in-bounds range), requiring lockfile reconciliation for installed versions, and adding cross-field consistency checks (e.g., `access_via` versus the hosted/local authority baseline). These additions are validation clarifications, not schema-field changes, so a v1.2 snapshot needs no field migration to satisfy v1.3. This revision was prompted by a real first-profile run whose Phase-H check passed on path/range bounds yet still shipped two evidence excerpts naming classes that did not exist at the cited lines.
+**Lineage:** Supersedes Project Profile Discovery Directive v1.3. Preserves all v1.3 behavior, fields, and validation rules while adding a `documentation` value to the `project.kind` enum so that documentation, specification, and methodology packages — which previously had no fitting value and were coerced to `library` — classify cleanly. This is a purely additive vocabulary change (no fields added or removed, no validation behavior changed), so a v1.3 snapshot needs no migration to satisfy v1.4. The value gap was surfaced by running the audit on this package itself.
 
 ---
 
@@ -615,11 +615,11 @@ This schema is intentionally role-based rather than tool-specific. Projects may 
 ```yaml
 # ---------- META ----------
 meta:
-  profile_version: "1.3"
+  profile_version: "1.4"
   generated_at: <ISO-8601 datetime>
   snapshot_date: <YYYY-MM-DD>
   generated_by: <agent identifier>
-  directive_version: "project-profile-directive-v1.3"
+  directive_version: "project-profile-directive-v1.4"
   audit_spec_target: "agentic-audit-spec-v3.1"
   profile_mode: <first-profile | refresh | focused-refresh>
   previous_profile:
@@ -634,7 +634,7 @@ meta:
 # ---------- PROJECT ----------
 project:
   name: <string>
-  kind: <app | service | library | monorepo | platform | automation | data-system | mobile-app | desktop-app | mixed | unknown>
+  kind: <app | service | library | documentation | monorepo | platform | automation | data-system | mobile-app | desktop-app | mixed | unknown>
   primary_purpose: |
     <1-3 sentences>
   repository:
@@ -1281,7 +1281,7 @@ Per-step boundaries are declared inline at each phase. The following apply globa
 
 ## 13. Versioning
 
-This directive is **v1.3** dated 2026-05-23.
+This directive is **v1.4** dated 2026-06-07.
 
 The minor-version bump is justified because the changes are additive relative to v1.0:
 
@@ -1319,6 +1319,10 @@ Additional v1.3 changes relative to v1.2 (all validation clarifications; no sche
 - lockfile reconciliation is required: when a lockfile is in scope, dependency versions are cited from the locked/installed value, not a manifest range;
 - a cross-field consistency rule rejects `model_providers[].access_via` values that contradict the hosted/local authority baseline, and §5 adds guidance for mapping local model execution onto the `access_via` enum.
 
+Additional v1.4 changes relative to v1.3 (additive vocabulary only; no schema fields added or removed and no validation behavior changed, so v1.3 snapshots need no migration):
+
+- added a `documentation` value to `project.kind`, so documentation, specification, and methodology packages classify cleanly instead of being coerced to `library`. The value gap was surfaced by running the audit on this package itself.
+
 Breaking schema changes should become v2.0. Additive fields or validation clarifications become v1.x. Wording-only corrections become patch releases.
 
 ---
@@ -1343,7 +1347,7 @@ The diff between v1.0 and current v1.x outputs is itself useful signal — it sh
 For projects with a v1.1 profile snapshot on file:
 
 1. Preserve the v1.1 snapshot as historical evidence.
-2. Run the current directive (v1.3 or later) as a new dated snapshot; do not mutate the prior profile in place.
+2. Run the current directive (v1.4 or later) as a new dated snapshot; do not mutate the prior profile in place.
 3. Treat protocol-surface fields, authority-matrix fields, execution-mode fields, semantic-convention stability, and provenance splits as additions in `profile-diff.md`.
 4. If the repo has no MCP, A2A, workflow-description, background/resumable, or durable-memory surfaces, record explicit absence with search notes rather than omitting the fields.
 5. Route any unknown but visible protocol, authority, or memory surface as an audit-attention flag.
