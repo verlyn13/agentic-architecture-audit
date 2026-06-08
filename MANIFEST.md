@@ -58,4 +58,4 @@ Steps 1–3 and cross-reference resolution are **automated** by `scripts/check_d
 pre-commit hook that also runs in CI (the hygiene workflow runs `pre-commit run --all-files`).
 Steps 4–5 remain human review.
 
-This package is expected to pass its own audit's Phase D (conventions) drift check.
+This package is expected to pass the profile directive's Phase D (conventions) drift check.
