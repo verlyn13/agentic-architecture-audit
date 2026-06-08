@@ -13,14 +13,14 @@ an authority text, the authority text wins.**
 | File | Role | Current target |
 | --- | --- | --- |
 | `profile-directive.md` | Profile snapshot authority | Project Profile Discovery Directive v1.4, 2026-06-07 |
-| `audit-spec.md` | Audit authority | Agentic Architecture Audit Specification v3.2, 2026-06-07 |
+| `audit-spec.md` | Audit authority | Agentic Architecture Audit Specification v3.3, 2026-06-08 |
 
 ## Derived companions
 
 | File | Role | Must target |
 | --- | --- | --- |
-| `companions/kickoff-prompt.md` | Copy/paste operational prompt for audit agents | Audit Spec v3.2 and Profile Directive v1.4 |
-| `companions/explainer.md` | Operator-facing explainer | Audit Spec v3.2 and Profile Directive v1.4 |
+| `companions/kickoff-prompt.md` | Copy/paste operational prompt for audit agents | Audit Spec v3.3 and Profile Directive v1.4 |
+| `companions/explainer.md` | Operator-facing explainer | Audit Spec v3.3 and Profile Directive v1.4 |
 | `.agents/skills/run-agentic-audit/SKILL.md` | Cross-agent skill entry point for running the audit | Defers to `companions/kickoff-prompt.md` (no independent version) |
 
 ## Versioning

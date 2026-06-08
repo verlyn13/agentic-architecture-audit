@@ -1,10 +1,10 @@
-# Agentic Architecture Audit — Agent Specification v3.2
+# Agentic Architecture Audit — Agent Specification v3.3
 
-**Version:** v3.2
-**Specification date:** 2026-06-07
+**Version:** v3.3
+**Specification date:** 2026-06-08
 **Status:** Operator-to-agent instruction document
 **Scope:** Project-agnostic and tooling-agnostic
-**Lineage:** Supersedes Agentic Architecture Audit Specification v3.1. Preserves all v3.1 behavior while adding first-class handling of the cross-agent instruction contract: `AGENTS.md` is recognized as the canonical, tool-agnostic instruction standard, with tool-specific files (`CLAUDE.md`, `GEMINI.md`, `.cursor/rules`) treated as bridges that should import or defer to it; Phase 4 inventories that relationship and flags divergence. This is an additive change — v3.1 audits remain valid, and the Project Profile Discovery Directive (v1.4) is consumed unchanged.
+**Lineage:** Supersedes Agentic Architecture Audit Specification v3.2. Preserves all v3.2 behavior while adding the `agent-operability` strategic-theme lens (§2.3, §11.12) — which reweights existing dimensions rather than adding a scored one — a repo-operating-agent authority clause (§11.6), and a developer-agent-workflow scope boundary (§0). Additive only: v3.2 audits remain valid, and the Project Profile Discovery Directive (v1.4) is consumed unchanged. The rationale (a theme, deliberately not a scored dimension) is recorded in `adr/0001-agent-operability-as-theme.md`.
 
 ---
 
@@ -28,6 +28,8 @@ The audit produces **evidence-backed, machine-verifiable findings** and **candid
 This specification is intended to work across languages, frameworks, repositories, agent platforms, and hosting environments. Tool names appear only as examples of enforcement categories; they are not requirements.
 
 The audit treats modern protocol objects as first-class architecture, not as vendor trivia. If a repository exposes MCP, A2A, workflow-description, remote-agent, hosted-tool, computer-use, browser-use, or background-agent surfaces, the audit inventories the advertised contracts, lifecycle states, authority model, and provenance behavior separately instead of collapsing them into a generic "tool" or "runtime" bucket.
+
+**Scope boundary.** The audit assesses architecture and the repo's agent-operating contracts and authority — not developer-agent workflow preference (worktree habits, local navigation, IDE affordances, CLI ergonomics), unless such an item defines authority, exposes a contract, automates a side effect, or is enforced as a fitness function. The product's own exposed CLI/SDK/MCP surfaces remain in scope.
 
 ---
 
@@ -90,6 +92,7 @@ The operator may provide one or more strategic themes that change priority weigh
 - `cost-attribution` — shipping per-tenant or per-feature billing.
 - `agent-runtime-consolidation` — reducing tool sprawl and clarifying boundaries.
 - `legacy-migration` — migrating off a deprecated framework or pattern.
+- `agent-operability` — ensuring the repo exposes a canonical cross-agent instruction contract, committed agent-authority configuration where applicable, and enforced operating guardrails so supported repo-operating agents can navigate and operate it.
 
 If a theme is supplied without an explicit dimension mapping, use the default from the table in §11.12. A strategic theme is **not** a finding; it is a weighting signal. The agent must not invent a theme. If none is provided, all findings record `strategic_relevance: none`.
 
@@ -1621,6 +1624,8 @@ Score each dimension 0–3 with evidence. Aggregate score is informational; the 
 - 2: Per-tool/action/principal authority declared with approval gates for write paths, but bypass/precedence/callback/secondary-credential handling may have gaps.
 - 3: Capability-scoped authority is enforced per invocation and audited; approval precedence, bypass modes, secondary credentials, callbacks, hosted/local boundaries, and computer-use/browser-use/filesystem-use sandboxes are verifiable.
 
+*Repo-operating agents (note).* Where repo-operating agents are in scope, committed authority configuration for those agents is assessed here separately from product-runtime principals. Evidence may include readable/writable scopes, approval precedence, bypass and protected-path behavior, sandbox or workspace roots, and hosted/local execution boundaries. Name capabilities, not vendor files; vendor-specific paths are examples only. If no such configuration exists, record whether that is not applicable, unknown, or an authority gap based on the repo's claimed operating model.
+
 ### 11.7 Observability semantics
 
 - 0: Logs only or no meaningful telemetry.
@@ -1670,6 +1675,9 @@ When an operator supplies a theme without an explicit dimension list, apply this
 | `cost-attribution` | 11.7 Observability, 11.5 State, 11.3 Contract discipline |
 | `agent-runtime-consolidation` | 11.4 Tool surface, 11.1 Bounded contexts, 11.6 Authority |
 | `legacy-migration` | 11.1 Bounded contexts, 11.2 Domain/application, 11.3 Contract discipline |
+| `agent-operability` | 11.3 Contract discipline, 11.6 Authority, 11.10 Governance, 11.11 Architectural fitness functions |
+
+For `agent-operability`, §11.8 Policy/prompt separation may be indirectly relevant when skill/SOP content carries product, authority, or release policy.
 
 Operators may override; custom themes name their own dimensions.
 
@@ -1811,7 +1819,7 @@ Per-step boundaries are declared inline at each phase. The following apply globa
 
 ## 16. Versioning
 
-This specification is **v3.2** dated 2026-06-07.
+This specification is **v3.3** dated 2026-06-08.
 
 Breaking changes bump the major version. Additive schema fields, additional examples, or clarification of existing behavior bump the minor version. Patch versions correct wording without changing behavior.
 
@@ -1867,6 +1875,13 @@ Changes from v3.1:
 - Added the `cross-agent-instruction` surface and `cross-agent-instruction-drift` flag to the Contract schema (§8.5), and added cross-agent instruction contracts to the Contract-discipline rubric (§11.3).
 - Additive only: v3.1 audits remain valid; the Profile Directive (v1.4) is unaffected and its profiles are consumed unchanged.
 
+Changes from v3.2:
+
+- Added the `agent-operability` **strategic-theme lens** (§2.3 examples + §11.12 default-mapping), reweighting §11.3/§11.6/§11.10/§11.11 at 1.5× without adding a scored dimension (rationale: `adr/0001-agent-operability-as-theme.md`).
+- Added a repo-operating-agent authority clause to §11.6 (committed dev-time authority configuration, a distinct principal from product-runtime).
+- Added a developer-agent-workflow scope boundary to §0.
+- Additive only: v3.2 audits remain valid; the Profile Directive (v1.4) is consumed unchanged.
+
 ## Appendix A — Migration from v2 to v3.x
 
 For projects with a v2 audit cycle on file:
@@ -1901,3 +1916,14 @@ For projects with a v3.1 audit cycle on file:
 2. Re-run Phase 4 to inventory the cross-agent instruction contract: confirm a canonical `AGENTS.md` exists and that any tool-specific files (`CLAUDE.md`, `GEMINI.md`, `.cursor/rules`) import or defer to it rather than diverging.
 3. Flag `cross-agent-instruction-drift` where a tooling-agnostic project ships only tool-specific instructions, or where bridges duplicate or contradict the canonical file.
 4. No other phase changes; v3.1 findings remain valid, and the Profile Directive (v1.4) is consumed unchanged.
+
+---
+
+## Appendix D — Migration from v3.2 to v3.3
+
+For projects with a v3.2 audit cycle on file:
+
+1. Preserve the v3.2 audit artifacts as the historical record.
+2. Optionally adopt the `agent-operability` strategic theme (§11.12) for a coherent operability reading; it reweights existing dimensions and adds no scored dimension, so prior scores are unaffected.
+3. Where repo-operating agents are in scope, assess their committed authority configuration under §11.6 (distinct from product-runtime principals).
+4. No phase or scoring change; v3.2 findings remain valid, and the Profile Directive (v1.4) is consumed unchanged.

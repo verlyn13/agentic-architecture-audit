@@ -12,8 +12,8 @@ authors:
   - family-names: Johnson
     given-names: "Jeffrey V."
     website: "https://jvjohnson.dev"
-version: "1.2.0"
-date-released: "2026-06-07"
+version: "1.3.0"
+date-released: "2026-06-08"
 license: Apache-2.0
 repository-code: "https://github.com/verlyn13/agentic-architecture-audit"
 url: "https://github.com/verlyn13/agentic-architecture-audit"
