@@ -1,9 +1,9 @@
 # Audit Kickoff Prompt — Copy/Paste to Your Coding Agent
 
-**Derived guidance targets:** Agentic Architecture Audit Specification v3.1 (2026-05-08) and Project Profile Discovery Directive v1.4 (2026-06-07). If this prompt conflicts with the full spec, the full spec wins.
+**Derived guidance targets:** Agentic Architecture Audit Specification v3.2 (2026-06-07) and Project Profile Discovery Directive v1.4 (2026-06-07). If this prompt conflicts with the full spec, the full spec wins.
 
 ```
-You are running the Agentic Architecture Audit per the v3.1 specification at
+You are running the Agentic Architecture Audit per the v3.2 specification at
 `audit-spec.md` (full spec, ~1900 lines). Read that file in full
 before doing anything else. This message is the kickoff; the spec is authoritative.
 If `MANIFEST.md` exists beside the spec, read it after the
