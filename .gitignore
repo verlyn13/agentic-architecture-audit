@@ -6,6 +6,10 @@
 .idea/
 .vscode/
 
+# Python bytecode (scripts/check_drift.py and its self-test)
+__pycache__/
+*.py[cod]
+
 # Local, personal agent settings — never committed (shared settings live in .claude/settings.json)
 .claude/settings.local.json
 .codex/

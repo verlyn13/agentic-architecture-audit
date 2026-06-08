@@ -56,6 +56,16 @@ Before publishing a new package revision:
 
 Steps 1–3 and cross-reference resolution are **automated** by `scripts/check_drift.py`, a
 pre-commit hook that also runs in CI (the hygiene workflow runs `pre-commit run --all-files`).
+Section-number references are resolved against the **specific** authority text a line names,
+so a reference attributed to the wrong authority is caught, not just an unknown number.
 Steps 4–5 remain human review.
 
 This package is expected to pass the profile directive's Phase D (conventions) drift check.
+
+## Release provenance
+
+A release or self-audit must record which claims were verified through which evidence lane
+— repo-local, GitHub-hosted, or unavailable — rather than asserting "protected `main`,
+green CI, signed commits" as one verified fact. The checklist, with the per-lane facts and
+the verifying commands, lives in [`CONTRIBUTING.md`](CONTRIBUTING.md) under "Releasing and
+provenance verification."

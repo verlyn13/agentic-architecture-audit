@@ -30,3 +30,11 @@ repos:
         language: system
         pass_filenames: false
         always_run: true
+      # FF-001: the drift linter's own negative test (authority-aware §-ref resolution).
+      # Guards against the F-001 regression where a wrong-authority section ref passed.
+      - id: drift-check-selftest
+        name: drift linter self-test (FF-001)
+        entry: python3 scripts/check_drift.py --self-test
+        language: system
+        pass_filenames: false
+        always_run: true
