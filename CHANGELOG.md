@@ -11,20 +11,55 @@ companion-only edit bumps the **patch**.
 
 ## [Unreleased]
 
-Resolves the three remaining findings from the 2026-06-08 self-audit. **Patch**-level:
-companions, tooling, and governance only — no authority text changes, so the authority
-versions (Audit Spec v3.3, Profile Directive v1.4) are unchanged.
+## [1.4.0] - 2026-06-09
 
-### Changed
+Cuts **Agentic Architecture Audit Specification v3.4** (was v3.3) and **Project Profile
+Discovery Directive v1.5** (was v1.4) — the first dual-authority cut. Driven by a verified
+standards-currency review (2026-06-09) of the mid-2026 agentic landscape: MCP's task/extension/
+deprecation lifecycle, the cross-tool Agent Skills standard, agent identity and delegated
+commerce, and the customization supply chain. All changes are additive; **minor** package
+bump per the versioning rule. Companions, `MANIFEST.md`, `README.md`, and `CITATION.cff`
+are synced; the FF-004 drift linter verifies the sync. Rationale recorded in
+`adr/0002-skills-as-contracts-and-protocol-object-lifecycle.md`.
+
+### Agentic Architecture Audit Specification — v3.3 → v3.4 (2026-06-09)
+
+- **Agent-skill packages become first-class contracts and authority surfaces** (§5.1, §6.3,
+  Phases 4 and 6, §8.5, §8.7, §9.1, §11.3, §14): frontmatter contracts, capability
+  pre-approvals (e.g., `allowed-tools`), bundled executables, and source/marketplace
+  provenance are inventoried and flagged — prose instructions remain governance, checked in
+  Phase 8.
+- **Protocol-object lifecycle status** is recorded against the pinned protocol revision
+  (Phase 0, Phase 4, §8.5 `protocol_object_status`, §14), so the inventory tracks
+  deprecations and extensions instead of hard-coding an object list; protocol tasks,
+  extension declarations, server-delivered UI surfaces, and registry/discovery metadata
+  become inventoryable objects.
+- **Agent identity and delegated commerce** join Phase 6 and the §9.7 authority matrix
+  (commerce checks apply only where an agent can initiate or approve payments).
+- **Customization supply-chain** checks (skills/hooks/plugins/protocol-server configuration
+  consumed by repo-operating agents) join the agent-operability lens; the §11.6 isolation
+  baseline is calibrated (OS-level or micro-VM sandbox, write-allowlists, default-deny egress).
+- Hosted-eval **platform-lifecycle** flag (Phase 9); refreshed §14 reference anchors.
+- Additive only: v3.3 audits remain valid; v1.4 profiles are consumed unchanged.
+
+### Project Profile Discovery Directive — v1.4 → v1.5 (2026-06-09)
+
+- Adds `agent_surface.skills`, MCP task/extension/server-delivered-UI/deprecated-objects
+  fields, a `commerce` protocol-surface block, and committed repo-operating-agent
+  configuration + agent-identity-attestation fields in the authority baselines, with
+  matching Phase D/E/F discovery steps and validation rules. Purely additive: v1.4
+  snapshots need no migration.
+
+### Also included (companion/tooling, from the 2026-06-08 self-audit follow-ups)
+
+Resolves the three remaining findings from the 2026-06-08 self-audit (shipped unreleased
+on `main` before this cut):
 
 - Drift linter (`scripts/check_drift.py`): the section-reference check now resolves each
   reference against the **specific** authority text its line names, instead of accepting
   any number present in either text. This closes self-audit **F-001** (FF-001), where a
   reference attributed to the profile directive but naming an audit-spec-only section
   passed. Correctly-attributed and unattributed references are unaffected.
-
-### Added
-
 - `scripts/check_drift.py --self-test`, wired as its own pre-commit hook, locks in the
   FF-001 negative test so the F-001 regression cannot return silently.
 - `CONTRIBUTING.md` and `SECURITY.md` (self-audit **F-003** / FF-003): contribution and
@@ -154,7 +189,8 @@ Preserves the v3 audit philosophy and adds targeted coverage for:
 - server-exposed prompts and privileged-context injection boundaries;
 - eval coverage for protocol surfaces, approval paths, async lifecycle, and memory lifecycle.
 
-[Unreleased]: https://github.com/verlyn13/agentic-architecture-audit/compare/v1.3.0...HEAD
+[Unreleased]: https://github.com/verlyn13/agentic-architecture-audit/compare/v1.4.0...HEAD
+[1.4.0]: https://github.com/verlyn13/agentic-architecture-audit/releases/tag/v1.4.0
 [1.3.0]: https://github.com/verlyn13/agentic-architecture-audit/releases/tag/v1.3.0
 [1.2.0]: https://github.com/verlyn13/agentic-architecture-audit/releases/tag/v1.2.0
 [1.1.0]: https://github.com/verlyn13/agentic-architecture-audit/releases/tag/v1.1.0
