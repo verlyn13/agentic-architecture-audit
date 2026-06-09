@@ -1,10 +1,10 @@
-# Project Profile Discovery Directive v1.4
+# Project Profile Discovery Directive v1.5
 
-**Version:** v1.4
-**Directive date:** 2026-06-07
+**Version:** v1.5
+**Directive date:** 2026-06-09
 **Status:** Operator-to-agent instruction document
 **Scope:** Project-agnostic and tooling-agnostic
-**Lineage:** Supersedes Project Profile Discovery Directive v1.3. Preserves all v1.3 behavior, fields, and validation rules while adding a `documentation` value to the `project.kind` enum so that documentation, specification, and methodology packages — which previously had no fitting value and were coerced to `library` — classify cleanly. This is a purely additive vocabulary change (no fields added or removed, no validation behavior changed), so a v1.3 snapshot needs no migration to satisfy v1.4. The value gap was surfaced by running the audit on this package itself.
+**Lineage:** Supersedes Project Profile Discovery Directive v1.4. Preserves all v1.4 behavior, fields, and validation rules while adding discovery coverage for surfaces that became first-class in the audit specification's v3.4 cut: agent-skill packages (`agent_surface.skills`), protocol task/extension/server-delivered-UI fields under the MCP block, a delegated-commerce protocol-surface block, and committed repo-operating-agent configuration fields in the authority baselines — together with matching validation rules for the new fields. Purely additive: no fields are removed and no existing validation behavior changes, so a v1.4 snapshot needs no migration to satisfy v1.5 (the new fields appear as additions in the profile diff).
 
 ---
 
@@ -321,6 +321,7 @@ Extract project conventions:
 - agent operating rules;
 - subagent invocation conventions;
 - computer-use and browser-use authority restrictions;
+- customization supply-chain controls (source pinning, marketplace allowlists, or lockdown rules for skills, hooks, plugins, and protocol-server configuration consumed by repo-operating agents);
 - provenance emission requirements.
 
 Run a contradiction check across rules on the same topic.
@@ -361,10 +362,13 @@ Locate model-mediated and automation-mediated surfaces:
 - agent framework usage;
 - custom model loops;
 - tool/action/skill definitions;
+- agent-skill packages (skill directories with frontmatter metadata, capability pre-approvals such as `allowed-tools`, and bundled scripts or assets), including their locations and whether they are first-party or third-party/marketplace-sourced;
 - resource definitions;
 - resource-template definitions;
 - root exposure declarations;
 - sampling, elicitation, and completion capability declarations;
+- protocol task support, extension declarations, and server-delivered UI surfaces advertised by protocol servers or clients;
+- delegated-commerce or payment-delegation surfaces (intent mandates, payment-capable tools), where present;
 - prompt definitions;
 - server-exposed prompt definitions;
 - prompt files;
@@ -404,6 +408,7 @@ Detect loops where a model, planner, script, or automation output feeds back int
 - Do not treat automation as non-agentic merely because it lacks an LLM.
 - Do not silently merge subagent definitions with tool definitions.
 - Do not flatten MCP/A2A protocol objects into a single "tool server" line when the concrete surfaces are readable.
+- Do not record an agent-skill package by its prose alone; capture its machine-readable surface (frontmatter, capability pre-approvals, bundled executables) and its source.
 - Do not merge session state, durable conversation state, long-term memory, retrieval corpora, retrieval indexes, and operator-authored rules/memory.
 
 **Output fragment**
@@ -433,7 +438,7 @@ Discover baselines:
 
 1. **Evals and quality gates** — eval suites, benchmarks, golden datasets, fixtures, model tests, behavior tests, release gates, CI jobs, human rubrics. Distinguish `offline | online | live | calibration` modes. Distinguish CI integration from release-gate enforcement.
 2. **Observability** — tracing, metrics, logs, semantic conventions (including OTel GenAI version pinning), audit logs, model telemetry, separate `cost_attribution`, `latency_attribution`, `quality_attribution`.
-3. **Authority** — approval gates, approval modes, deny/ask/allow precedence, bypass or auto-approval modes, permission scopes, roles, protected paths, sandbox roots, browser scope, filesystem scope, callback authentication, secondary credential paths, secrets access, write authority, hosted-versus-local boundaries, default agent authority.
+3. **Authority** — approval gates, approval modes, deny/ask/allow precedence, bypass or auto-approval modes, permission scopes, roles, protected paths, sandbox roots, browser scope, filesystem scope, callback authentication, secondary credential paths, secrets access, write authority, hosted-versus-local boundaries, default agent authority, committed repo-operating-agent configuration (permission budgets, sandbox and egress settings, lifecycle hooks, customization lockdown or marketplace controls), and agent identity attestation where evident.
 4. **Provenance** — runtime/action manifests attached to agent outputs, audit-log entries with tool/source/model/approval/task fields, content credentials or content-provenance positions, build/source attestations or release provenance, custom provenance records.
 5. **Versioning** — HTTP/API versioning, schema versioning, workflow-description/overlay versioning, MCP/A2A protocol versioning, semantic-convention version and stability, prompt versioning, tool/action/resource versioning, subagent versioning, policy versioning, dataset/evaluator versioning, public SDK versioning.
 6. **Fitness functions** — existing static checks, policy checks, architecture checks, schema diffs, dependency boundaries, prompt scans, eval coverage checks, telemetry linters.
@@ -615,11 +620,11 @@ This schema is intentionally role-based rather than tool-specific. Projects may 
 ```yaml
 # ---------- META ----------
 meta:
-  profile_version: "1.4"
+  profile_version: "1.5"
   generated_at: <ISO-8601 datetime>
   snapshot_date: <YYYY-MM-DD>
   generated_by: <agent identifier>
-  directive_version: "project-profile-directive-v1.4"
+  directive_version: "project-profile-directive-v1.5"
   audit_spec_target: "agentic-audit-spec-v3.1"
   profile_mode: <first-profile | refresh | focused-refresh>
   previous_profile:
@@ -730,6 +735,15 @@ agent_surface:
     schemas_defined: <true | false | partial | unknown>
     schema_tech: <json-schema | openapi | protobuf | type-system | validation-library | ad-hoc | absent | mixed | unknown>
     registry_path: <path | none | unknown>
+  skills:
+    count: <integer>
+    locations: [<path>]
+    frontmatter_valid: <true | false | partial | n/a | unknown>
+    capability_preapprovals_present: <true | false | partial | unknown>   # e.g., allowed-tools grants
+    bundled_executables_present: <true | false | unknown>
+    sources: [<first-party | third-party | marketplace | mixed | unknown>]
+    provenance_or_vetting: <present | absent | partial | unknown>
+    evidence: [{path: <file>, lines: <range>}]
   protocol_surfaces:
     mcp:
       present: <true | false | unknown>
@@ -742,6 +756,10 @@ agent_surface:
       sampling_supported: <true | false | unknown>
       elicitation_supported: <true | false | unknown>
       completion_supported: <true | false | unknown>
+      tasks_supported: <true | false | unknown>
+      extensions: [<extension identifier>]
+      server_delivered_ui: <true | false | unknown>
+      deprecated_objects_in_use: [<string>]    # objects deprecated at the pinned protocol revision
       authorization_metadata: <present | absent | partial | unknown>
       evidence: [{path: <file>, lines: <range>}]
     a2a:
@@ -760,6 +778,11 @@ agent_surface:
       workflow_descriptions: [<path>]
       overlays: [<path>]
       schema_dialects: [<string>]
+    commerce:
+      present: <true | false | unknown>
+      protocols: [<string>]
+      mandate_contracts: <present | absent | partial | n/a | unknown>
+      evidence: [{path: <file>, lines: <range>}]
   subagents:
     count: <integer>
     locations: [<path>]
@@ -921,6 +944,9 @@ baselines:
     secondary_credentials: [<string>]
     hosted_or_local_agent_execution: <hosted | local | hybrid | n/a | unknown>
     default_agent_authority: <read-only | read-write | admin | sandboxed | unknown>
+    committed_agent_config_paths: [<path>]
+    customization_lockdown: <present | absent | partial | n/a | unknown>
+    agent_identity_attestation: <present | absent | partial | n/a | unknown>
   provenance:
     runtime_action_emission: <full | partial | none | unknown>
     content_provenance_position: <implemented | not-applicable | planned | absent | unknown>
@@ -1110,6 +1136,8 @@ Reject the profile and loop back to the relevant phase if:
 - `agent_surface.tools.count > 0` and schema status is `unknown` without search notes.
 - `agent_surface.protocol_surfaces.mcp.present == true` and concrete MCP surface counts, authorization metadata, or protocol-version fields are all `unknown` without search notes.
 - `agent_surface.protocol_surfaces.a2a.present == true` and Agent Cards, advertised skills, task-state contracts, authentication schemes, or protocol-version fields are all `unknown` without search notes.
+- `agent_surface.skills.count > 0` and `frontmatter_valid`, `capability_preapprovals_present`, and `sources` are all `unknown` without search notes.
+- `agent_surface.protocol_surfaces.commerce.present == true` and `protocols` and `mandate_contracts` are all `unknown` without search notes.
 - `agent_surface.subagents.count > 0` and `typed_boundaries` is `unknown` without search notes.
 - `agent_surface.prompts.count > 0` and prompt surface types are all `unknown` without search notes.
 - `agent_surface.memory_surfaces_detected` contains durable or long-term classes without owner, deletion/reset, or authority notes.
@@ -1215,7 +1243,8 @@ Audit Spec v3.1 consumes:
 - `strategic_themes` for Phase 10 weighting (mandatory consumption);
 - `audit_attention_flags` for phase routing;
 - `agent_surface.tools`, `agent_surface.subagents`, `agent_surface.prompts`, `agent_surface.context_assembly`, and `automation_surface` for Phases 3, 4, 6, 8, and 9;
-- `agent_surface.protocol_surfaces` for Phases 0, 3, 4, 6, 7, 8, and 9;
+- `agent_surface.skills` for Phases 4, 6, and 8;
+- `agent_surface.protocol_surfaces` (including the commerce block) for Phases 0, 3, 4, 6, 7, 8, and 9;
 - `agent_surface.memory_surfaces_detected` and `agent_surface.execution_modes_detected` for Phases 3, 5, 6, 7, and 9;
 - `baselines.evals` for Phase 9;
 - `baselines.observability` for Phase 7;
@@ -1281,7 +1310,7 @@ Per-step boundaries are declared inline at each phase. The following apply globa
 
 ## 13. Versioning
 
-This directive is **v1.4** dated 2026-06-07.
+This directive is **v1.5** dated 2026-06-09.
 
 The minor-version bump is justified because the changes are additive relative to v1.0:
 
@@ -1322,6 +1351,14 @@ Additional v1.3 changes relative to v1.2 (all validation clarifications; no sche
 Additional v1.4 changes relative to v1.3 (additive vocabulary only; no schema fields added or removed and no validation behavior changed, so v1.3 snapshots need no migration):
 
 - added a `documentation` value to `project.kind`, so documentation, specification, and methodology packages classify cleanly instead of being coerced to `library`. The value gap was surfaced by running the audit on this package itself.
+
+Additional v1.5 changes relative to v1.4 (additive fields and matching validation rules; nothing removed and no existing validation behavior changed, so v1.4 snapshots need no migration — new fields appear as additions in the profile diff):
+
+- added `agent_surface.skills`: agent-skill packages discovered as machine-readable surfaces (frontmatter validity, capability pre-approvals such as `allowed-tools`, bundled executables, first-party/third-party/marketplace sources, and provenance or vetting evidence), with a validation rule requiring search notes when these are unknown;
+- added protocol task, extension, server-delivered-UI, and deprecated-objects-in-use fields to the MCP protocol-surface block, so the audit can record protocol-object lifecycle status against its pinned revision;
+- added a `commerce` protocol-surface block (delegated-commerce or payment-delegation surfaces, their protocols, and mandate contracts), with a matching validation rule;
+- added `committed_agent_config_paths`, `customization_lockdown`, and `agent_identity_attestation` to the authority baselines, plus committed repo-operating-agent configuration in Phase F discovery;
+- added agent-skill, protocol task/extension/UI, and commerce surfaces to Phase E discovery, and customization supply-chain controls to Phase D conventions.
 
 Breaking schema changes should become v2.0. Additive fields or validation clarifications become v1.x. Wording-only corrections become patch releases.
 
