@@ -1,10 +1,10 @@
-# Agentic Architecture Audit — Agent Specification v3.3
+# Agentic Architecture Audit — Agent Specification v3.4
 
-**Version:** v3.3
-**Specification date:** 2026-06-08
+**Version:** v3.4
+**Specification date:** 2026-06-09
 **Status:** Operator-to-agent instruction document
 **Scope:** Project-agnostic and tooling-agnostic
-**Lineage:** Supersedes Agentic Architecture Audit Specification v3.2. Preserves all v3.2 behavior while adding the `agent-operability` strategic-theme lens (§2.3, §11.12) — which reweights existing dimensions rather than adding a scored one — a repo-operating-agent authority clause (§11.6), and a developer-agent-workflow scope boundary (§0). Additive only: v3.2 audits remain valid, and the Project Profile Discovery Directive (v1.4) is consumed unchanged. The rationale (a theme, deliberately not a scored dimension) is recorded in `adr/0001-agent-operability-as-theme.md`.
+**Lineage:** Supersedes Agentic Architecture Audit Specification v3.3. Preserves all v3.3 behavior while adding: agent-skill packages as first-class contracts and authority surfaces (§5.1, §6.3, Phases 4 and 6, §8.5, §8.7, §9.1, §11.3); protocol-object lifecycle status recorded against the pinned protocol revision (Phase 4, §8.5, §14), with protocol tasks, extension declarations, server-delivered UI surfaces, and registry/discovery metadata as inventoryable objects; agent-identity and delegated-commerce evidence targets in the authority matrix (Phase 6, §9.7); customization supply-chain checks under the agent-operability lens; and refreshed reference anchors (§14). Additive only: v3.3 audits remain valid. Profiles from Project Profile Discovery Directive v1.4 are consumed unchanged; Directive v1.5 adds optional discovery fields this specification consumes when present. The rationale is recorded in `adr/0002-skills-as-contracts-and-protocol-object-lifecycle.md`.
 
 ---
 
@@ -92,7 +92,7 @@ The operator may provide one or more strategic themes that change priority weigh
 - `cost-attribution` — shipping per-tenant or per-feature billing.
 - `agent-runtime-consolidation` — reducing tool sprawl and clarifying boundaries.
 - `legacy-migration` — migrating off a deprecated framework or pattern.
-- `agent-operability` — ensuring the repo exposes a canonical cross-agent instruction contract, committed agent-authority configuration where applicable, and enforced operating guardrails so supported repo-operating agents can navigate and operate it.
+- `agent-operability` — ensuring the repo exposes a canonical cross-agent instruction contract, committed agent-authority configuration where applicable, enforced operating guardrails, and source-controlled customization layers (skills, hooks, plugins, protocol-server configuration) so supported repo-operating agents can navigate and operate it.
 
 If a theme is supplied without an explicit dimension mapping, use the default from the table in §11.12. A strategic theme is **not** a finding; it is a weighting signal. The agent must not invent a theme. If none is provided, all findings record `strategic_relevance: none`.
 
@@ -174,7 +174,7 @@ This model is a reference for classification and scoring. It is not a mandate to
 1. **Domain.** Invariants, policies, value objects, domain services, domain events. Pure with respect to transport, persistence, UI, and provider SDKs.
 2. **Application.** Use cases and workflows. Coordinates domain, adapters, transactions, authorization checks, idempotency, and side effects.
 3. **Agent or automation runtime.** Model calls, tool selection, handoffs, loop control, guardrails, prompt assembly, planner/executor behavior, subagent dispatch, human approval checkpoints, and automation-policy routing.
-4. **Contracts.** Machine-readable definitions for externally visible interfaces: HTTP, RPC, events, tools, resources, prompts, config, persisted records, retrieval metadata, plugin or extension manifests, OpenAPI/Arazzo/Overlay-style API and workflow descriptions, MCP tools/resources/resource templates/prompts/roots/sampling/elicitation metadata, A2A Agent Cards/skills/task-state contracts, callback or notification schemas, public SDK surfaces, cross-agent instruction contracts (a canonical `AGENTS.md` plus tool-specific bridge files), and provenance manifests for agentic outputs.
+4. **Contracts.** Machine-readable definitions for externally visible interfaces: HTTP, RPC, events, tools, resources, prompts, config, persisted records, retrieval metadata, plugin or extension manifests, OpenAPI/Arazzo/Overlay-style API and workflow descriptions, MCP tools/resources/resource templates/prompts/roots/sampling/elicitation metadata, protocol task lifecycles, protocol extension declarations (including server-delivered UI extensions), protocol registry and discovery metadata, A2A Agent Cards/skills/task-state contracts, callback or notification schemas, public SDK surfaces, cross-agent instruction contracts (a canonical `AGENTS.md` plus tool-specific bridge files), agent-skill packages (skill frontmatter, capability pre-approvals, and bundled executable assets), delegated-commerce mandates where an agent can initiate or approve payments, and provenance manifests for agentic outputs.
 5. **Adapters.** Driving and driven integrations: routers, CLIs, workers, UI/API gateways, databases, queues, filesystems, cloud APIs, model providers, external services, device interfaces, retrieval indices, browser-use harnesses, computer-use sandboxes, and durable-workflow workers.
 6. **State, memory, and artifacts.** Request-local state, session state, durable conversation state, long-term memory, retrieval corpora, retrieval indexes, generated artifacts, logs, evaluation datasets, checkpoint state, operator-authored persistent rules/memory, and operator decisions.
 7. **Authority and governance.** Approval policies, approval-mode precedence, bypass/auto-approval modes, capability scopes, secrets, secondary credential paths, callback/webhook authentication, workspace roots, ADRs, rules, risk controls, access boundaries, and audit trail.
@@ -239,6 +239,7 @@ A `mixed` classification requires citations for each mixed concern.
 - A router that validates business rules is `interface` — the rules belong in `domain` or `application`.
 - A subagent definition is `agent-runtime`; the subagent's tool implementations are `adapter` or `application` per their primary work.
 - A SKILL.md / AGENTS.md / CLAUDE.md file is `governance`. Among instruction files, `AGENTS.md` is the canonical cross-agent source; tool-specific files (`CLAUDE.md`, `GEMINI.md`, `.cursor/rules`) are bridges that should import or defer to it. The canonical↔bridge relationship is inventoried as a cross-agent instruction contract in Phase 4. A prompt template referenced from one is `agent-runtime`.
+- An agent-skill package's machine-readable surface — frontmatter metadata, capability pre-approvals (for example an `allowed-tools` grant), and bundled executable scripts or assets — is additionally inventoried as a contract in Phase 4 and as an authority surface in Phase 6. Its prose instructions remain `governance` and are checked in Phase 8.
 - Test code is classified by the subject under test, tagged `kind:test`.
 
 ### 6.4 Secondary tags
@@ -248,7 +249,7 @@ Use as many as apply:
 - `bounded-context:<name>`
 - `authority:read-only | read-write | admin | privileged | sandboxed | computer-use | browser-use | filesystem-use | hosted-tool | remote-agent | callback-capable | unknown`
 - `durability:request-local | session | durable | long-term | derived | cache | index | artifact | checkpoint | unknown`
-- `surface:http | rpc | event | queue | tool | resource | resource-template | prompt | root | sampling | elicitation | completion | cli | ui | webhook | callback | file | device | sdk | workflow | a2a | agent-card | task | subagent | other`
+- `surface:http | rpc | event | queue | tool | resource | resource-template | prompt | root | sampling | elicitation | completion | cli | ui | webhook | callback | file | device | sdk | workflow | a2a | agent-card | task | subagent | agent-skill | extension | ui-app | commerce | other`
 - `sync-model:sync | async | streaming | long-running | scheduled | batch | background | paused-for-approval | resumable | durable | event-triggered | unknown`
 - `approval-mode:deny | ask | allow | auto-approved | human-in-loop | blocked | none-required | unknown`
 - `provenance:runtime-action | content | build-source | unknown`
@@ -283,7 +284,7 @@ Phases run in order. Each phase has inputs, procedure, boundaries, outputs, and 
 3. Verify that all profile-cited paths still exist; record drift where they do not.
 4. Record include and exclude paths.
 5. Record strategic themes and affected scoring dimensions, if provided.
-6. Pin reference-anchor versions and stability statuses needed for the run (§14), including protocol revisions when MCP, A2A, workflow-description, or semantic telemetry surfaces exist.
+6. Pin reference-anchor versions and stability statuses needed for the run (§14), including protocol revisions when MCP, A2A, workflow-description, or semantic telemetry surfaces exist. The pinned protocol revision is the baseline against which Phase 4 records each protocol object's lifecycle status.
 7. Check directive-set companion metadata if supplied (`companions/kickoff-prompt.md`, `companions/explainer.md`, manifest, examples). Record drift when companions target a different authority version.
 8. Route profile audit-attention flags to Phases 1–10.
 9. Identify previous-cycle conventions from cycle history that affect this audit.
@@ -414,7 +415,7 @@ Produce a context map showing calls, events, data dependencies, policy dependenc
 
 **Procedure**
 
-1. Enumerate entrypoints: HTTP routes, RPC, CLI, UI actions, queue consumers, schedulers, webhooks, callbacks, event handlers, MCP tools, MCP resources, MCP resource templates, MCP prompts, MCP roots exposure, MCP sampling/elicitation/completion paths, A2A receivers, A2A Agent Card discovery paths, agents, subagent invocations, automation loops, durable-workflow handlers, background-agent triggers, batch jobs, device interfaces, and public SDK calls.
+1. Enumerate entrypoints: HTTP routes, RPC, CLI, UI actions, queue consumers, schedulers, webhooks, callbacks, event handlers, MCP tools, MCP resources, MCP resource templates, MCP prompts, MCP roots exposure, MCP sampling/elicitation/completion paths, protocol task-augmented or task-polling paths, A2A receivers, A2A Agent Card discovery paths, agents, subagent invocations, automation loops, durable-workflow handlers, background-agent triggers, batch jobs, device interfaces, and public SDK calls.
 2. For each entrypoint, trace the call chain to the first external side effect (DB write, external API, queue publish, filesystem write, LLM call, tool invocation crossing an authority boundary).
 3. Mark execution model: `sync | async | streaming | long-running | scheduled | batch | background | paused-for-approval | resumable | durable | event-triggered`.
 4. For background, paused, resumable, durable, streaming, or callback-mediated paths, record lifecycle contract, resume state, timeout/retry behavior, notification/callback channel, and completion authority.
@@ -465,9 +466,14 @@ Locate externally visible and internally relied-upon contracts:
 - tool/action/skill schemas;
 - resource manifests;
 - MCP tools, resources, resource templates, prompts, roots exposure, sampling support, elicitation support, completion support, and authorization metadata;
+- protocol task contracts (durable or async request lifecycles advertised by a protocol surface, with their states, polling/notification behavior, and TTL or expiry semantics);
+- protocol extension declarations (negotiated extension identifiers and capability metadata), including server-delivered UI extensions (sandboxed app or iframe resources delivered by a protocol server);
+- protocol registry and discovery metadata (registry entries, well-known discovery documents, server cards, signed agent cards);
 - prompt manifests and parameter schemas;
 - configuration schemas;
 - cross-agent instruction contracts (a canonical `AGENTS.md` and the tool-specific bridge files — `CLAUDE.md`, `GEMINI.md`, `.cursor/rules` — that should import or defer to it);
+- agent-skill packages (skill frontmatter metadata, capability pre-approvals such as `allowed-tools`, bundled executable scripts or assets, and the source or marketplace provenance of third-party skills);
+- delegated-commerce contracts (verifiable intent mandates, payment-delegation scopes, checkout or settlement task contracts), where an agent can initiate or approve payments;
 - database migration contracts and persisted document formats;
 - retrieval chunk metadata;
 - SDK/API public surface;
@@ -481,7 +487,7 @@ Locate externally visible and internally relied-upon contracts:
 - eval dataset schemas;
 - policy-as-code input/output schemas.
 
-For each contract, record: name, format, surface, location, versioning strategy, schema dialect if applicable, protocol version if applicable, advertised capabilities, authentication/authorization scheme, producer, consumers, validation mechanism, compatibility policy, citations.
+For each contract, record: name, format, surface, location, versioning strategy, schema dialect if applicable, protocol version if applicable, protocol-object lifecycle status against the pinned protocol revision if applicable (core, extension, experimental, deprecated, or unknown), advertised capabilities, authentication/authorization scheme, producer, consumers, validation mechanism, compatibility policy, citations.
 
 Flag:
 
@@ -500,6 +506,12 @@ Flag:
 - callback or push notification without request/response schema and authentication declaration;
 - subagent boundary without typed message contract;
 - retrieval chunks without typed metadata;
+- agent-skill package without a valid frontmatter contract;
+- skill capability pre-approval (`allowed-tools` or equivalent) or bundled executable without a matching authority declaration (route to Phase 6);
+- third-party skill, plugin, or extension without source or marketplace provenance;
+- protocol object that is deprecated or experimental at the pinned protocol revision, relied on without a recorded migration or stability position;
+- server-delivered UI extension without sandbox and message-boundary declaration;
+- payment-capable surface without a verifiable intent mandate or bounded delegation contract;
 - agentic output without runtime/action provenance manifest;
 - generated content without content-provenance position where content authenticity matters;
 - release/build output without build/source provenance position where supply-chain integrity matters.
@@ -510,6 +522,8 @@ Flag:
 - Do not require a particular schema technology.
 - Do not treat comments as machine-readable contracts unless the project intentionally uses comment-based IDL generation and cites it.
 - Do not flatten MCP or A2A into "tool exists"; their advertised surfaces carry separate contract, authority, and lifecycle implications.
+- Do not classify an agent-skill package as prose governance alone when it declares machine-readable metadata, capability pre-approvals, or bundled executables.
+- Do not treat a protocol object list remembered from training data as current; inventory objects against the pinned protocol revision and record their lifecycle status.
 
 **Outputs**
 
@@ -521,9 +535,11 @@ Flag:
 - No unflagged ad-hoc external contract remains.
 - Every tool/action/skill has a schema reference or is flagged.
 - Every MCP or A2A surface has its protocol object inventoried separately or a missing-contract flag.
+- Every inventoried protocol object records a lifecycle status against the pinned protocol revision, or `unknown` with a search note.
 - Every public interface has producer and consumer evidence or an explicit `consumer-unknown` flag.
 - Every subagent boundary has a typed message contract or a flag.
 - Every cross-agent instruction surface resolves to a canonical `AGENTS.md` with consistent bridges, or carries a cross-agent-instruction-drift flag.
+- Every agent-skill package has a frontmatter contract and a source-provenance note recorded, or a flag.
 
 ---
 
@@ -619,6 +635,9 @@ For each principal — agent, subagent, automation, tool, action, service, adapt
 - callback/webhook authentication and replay protection;
 - hosted-versus-local execution boundary;
 - token delegation or exchange model;
+- agent identity attestation (workload identity, signed agent cards, signed-agent request headers, identity-chaining or token-exchange grants binding the agent to a user or workload);
+- capability pre-approvals granted by customization layers (skills, hooks, plugins) consumed by repo-operating agents, and the source-pinning or lockdown controls for those layers;
+- payment or commerce delegation (intent mandates, spending bounds, human-present versus delegated modes);
 - sandbox or isolation model;
 - escalation paths;
 - citations.
@@ -639,6 +658,10 @@ Identify:
 - computer-use or browser-use surface without sandbox declaration;
 - callback or push notification path without authentication model;
 - hosted MCP or remote-agent path without token-scope or consent boundary;
+- skill or customization layer that pre-approves capabilities or executes bundled scripts without an authority declaration;
+- customization layers consumed by repo-operating agents without source pinning, marketplace control, or vetting evidence;
+- payment-capable principal without a verifiable intent mandate, spending bound, or delegation contract;
+- server-delivered UI surface without sandbox or message-boundary declaration;
 - subagent without authority manifest.
 
 **Boundary declarations**
@@ -660,6 +683,8 @@ Identify:
 - Every principal has readable and writable scopes recorded.
 - Every browser-use, computer-use, or filesystem-use agent has a declared scope.
 - Every callback-capable, hosted-tool, or remote-agent principal has authentication and token-scope evidence or a missing-authority flag.
+- Every customization layer that grants capabilities to a repo-operating agent has authority and source-provenance evidence or a flag.
+- Every payment-capable or commerce-delegated principal has mandate and delegation-bound evidence or a missing-authority flag.
 
 ---
 
@@ -762,6 +787,7 @@ Additionally check:
 - **Retrieval-augmented surfaces** — locate retrieval policy (what's retrieved, what's filtered, what's reranked). Check whether retrieval policy encodes business rules that belong in domain code.
 - **Tool descriptions** — check whether descriptions encode policy ("only invoke this if amount > $10,000") that belongs in the tool's call site.
 - **Untrusted input boundaries** — identify whether user, tool, retrieval, resource, or remote-agent content can enter developer/system messages, privileged prompt context, policy context, or tool descriptions without structured boundary controls.
+- **Server-delivered UI surfaces** — where a protocol extension renders server-provided UI (sandboxed app or iframe resources), verify the sandbox declaration, the message-channel boundary, and whether UI-originated input can enter privileged context (route to Phases 4 and 6).
 
 Prompt and context values to grep and classify include:
 
@@ -815,7 +841,7 @@ Classify each prompt or context surface:
 - Every prompt-like surface is classified by surface type.
 - Every embedded-policy finding cites exact lines and the missing or conflicting policy home.
 - Every stale authoring artifact cites the current source it contradicts or states that no source exists.
-- Every server-exposed prompt and privileged-context input path is mapped to Phase 4 and Phase 6 or explicitly marked not applicable.
+- Every server-exposed prompt, server-delivered UI surface, and privileged-context input path is mapped to Phase 4 and Phase 6 or explicitly marked not applicable.
 
 ---
 
@@ -863,7 +889,8 @@ Flag:
 - protocol-advertised tool/resource/prompt/skill/task surface uncovered;
 - approval or bypass path untested;
 - background, paused, resumable, durable, or callback lifecycle untested;
-- memory retention or deletion path untested where persistence is material.
+- memory retention or deletion path untested where persistence is material;
+- eval suite or scoring dependency hosted on a platform that is deprecated or scheduled for shutdown.
 
 **Boundary declarations**
 
@@ -1139,7 +1166,7 @@ The audit produces fully valid JSON. Fragments below define the required shape. 
   "required": ["id", "kind", "path", "sync_model", "side_effects", "touches_loop", "citations"],
   "properties": {
     "id": {"type": "string"},
-    "kind": {"enum": ["http-route", "rpc", "queue-consumer", "cron", "cli", "ui-action", "agent-loop", "subagent-call", "remote-agent-call", "tool", "resource", "resource-template", "root", "sampling", "elicitation", "completion", "prompt", "webhook", "callback", "sdk-call", "batch", "device", "durable-workflow", "background-trigger", "a2a-receiver", "agent-card-discovery", "other"]},
+    "kind": {"enum": ["http-route", "rpc", "queue-consumer", "cron", "cli", "ui-action", "agent-loop", "subagent-call", "remote-agent-call", "tool", "resource", "resource-template", "root", "sampling", "elicitation", "completion", "task", "prompt", "webhook", "callback", "sdk-call", "batch", "device", "durable-workflow", "background-trigger", "a2a-receiver", "agent-card-discovery", "other"]},
     "path": {"type": "string"},
     "sync_model": {"enum": ["sync", "async", "streaming", "long-running", "scheduled", "batch", "background", "paused-for-approval", "resumable", "durable", "event-triggered", "unknown"]},
     "execution_mode": {"enum": ["sync", "streaming", "background", "paused", "resumable", "durable-workflow", "scheduled", "batch", "event-triggered", "unknown"]},
@@ -1164,19 +1191,20 @@ The audit produces fully valid JSON. Fragments below define the required shape. 
   "required": ["name", "format", "surface", "location", "versioning", "producers", "consumers", "citations"],
   "properties": {
     "name": {"type": "string"},
-    "format": {"enum": ["openapi", "arazzo", "overlay", "json-schema", "protobuf", "graphql", "idl", "zod", "pydantic", "typescript", "kotlin", "go-type", "python-type", "rust-type", "mcp-manifest", "a2a-agent-card", "workflow-description", "provenance-attestation", "ad-hoc", "other"]},
-    "surface": {"enum": ["http", "rpc", "event", "workflow", "tool", "resource", "resource-template", "root", "sampling", "elicitation", "completion", "prompt", "config", "persisted-format", "retrieval-metadata", "sdk", "file", "device", "policy", "a2a", "agent-card", "skill", "task-state", "subagent", "callback", "provenance-runtime-action", "provenance-content", "provenance-build-source", "cross-agent-instruction", "other"]},
+    "format": {"enum": ["openapi", "arazzo", "overlay", "json-schema", "protobuf", "graphql", "idl", "zod", "pydantic", "typescript", "kotlin", "go-type", "python-type", "rust-type", "mcp-manifest", "a2a-agent-card", "workflow-description", "agent-skill-package", "provenance-attestation", "ad-hoc", "other"]},
+    "surface": {"enum": ["http", "rpc", "event", "workflow", "tool", "resource", "resource-template", "root", "sampling", "elicitation", "completion", "task", "extension", "ui-app", "registry-discovery", "prompt", "config", "persisted-format", "retrieval-metadata", "sdk", "file", "device", "policy", "a2a", "agent-card", "skill", "task-state", "subagent", "agent-skill", "commerce", "callback", "provenance-runtime-action", "provenance-content", "provenance-build-source", "cross-agent-instruction", "other"]},
     "location": {"type": "string"},
     "versioning": {"enum": ["semver", "hash", "date", "schema-version", "none", "unknown"]},
     "schema_dialect": {"type": "string"},
     "protocol_version": {"type": "string"},
+    "protocol_object_status": {"enum": ["core", "extension", "experimental", "deprecated", "not-protocol-object", "unknown"], "description": "lifecycle status of this object at the protocol revision pinned in Phase 0 (§14)"},
     "advertised_capabilities": {"type": "array", "items": {"type": "string"}},
     "auth_scheme": {"type": "string"},
     "producers": {"type": "array", "items": {"type": "string"}},
     "consumers": {"type": "array", "items": {"type": "string"}},
     "validation": {"type": "string"},
     "compatibility_policy": {"type": "string"},
-    "flags": {"type": "array", "items": {"enum": ["route-without-spec", "tool-without-schema", "event-without-payload", "config-without-validation", "version-drift", "duplicate-name", "producer-consumer-drift", "sdk-surface-uncontracted", "prompt-args-without-schema", "mcp-surface-uninventoried", "a2a-card-without-auth", "a2a-task-contract-missing", "workflow-overlay-unlinked", "callback-schema-missing", "subagent-boundary-untyped", "retrieval-chunk-untyped", "runtime-provenance-missing", "content-provenance-position-missing", "build-provenance-position-missing", "cross-agent-instruction-drift", "provenance-missing"]}},
+    "flags": {"type": "array", "items": {"enum": ["route-without-spec", "tool-without-schema", "event-without-payload", "config-without-validation", "version-drift", "duplicate-name", "producer-consumer-drift", "sdk-surface-uncontracted", "prompt-args-without-schema", "mcp-surface-uninventoried", "a2a-card-without-auth", "a2a-task-contract-missing", "workflow-overlay-unlinked", "callback-schema-missing", "subagent-boundary-untyped", "retrieval-chunk-untyped", "skill-frontmatter-invalid", "skill-authority-undeclared", "skill-provenance-unvetted", "protocol-object-deprecated", "ui-extension-unsandboxed", "commerce-mandate-missing", "runtime-provenance-missing", "content-provenance-position-missing", "build-provenance-position-missing", "cross-agent-instruction-drift", "provenance-missing"]}},
     "citations": {"type": "array", "items": {"$ref": "#/$defs/Citation"}}
   }
 }
@@ -1232,7 +1260,7 @@ The audit produces fully valid JSON. Fragments below define the required shape. 
     "hosted_or_local": {"enum": ["hosted", "local", "hybrid", "n/a", "unknown"]},
     "token_delegation": {"type": "string"},
     "sandbox_model": {"type": "string"},
-    "flags": {"type": "array", "items": {"enum": ["escalation", "ambient-authority", "undeclared-scope", "write-without-approval-policy", "approval-not-enforced", "bypass-mode-unaccounted", "approval-precedence-unclear", "secret-scope-too-broad", "secondary-credential-too-broad", "workspace-root-too-broad", "callback-auth-missing", "remote-agent-token-scope-unknown", "computer-use-unsandboxed", "subagent-without-policy"]}},
+    "flags": {"type": "array", "items": {"enum": ["escalation", "ambient-authority", "undeclared-scope", "write-without-approval-policy", "approval-not-enforced", "bypass-mode-unaccounted", "approval-precedence-unclear", "secret-scope-too-broad", "secondary-credential-too-broad", "workspace-root-too-broad", "callback-auth-missing", "remote-agent-token-scope-unknown", "computer-use-unsandboxed", "skill-authority-undeclared", "customization-source-unpinned", "ui-extension-unsandboxed", "commerce-delegation-unbounded", "subagent-without-policy"]}},
     "citations": {"type": "array", "items": {"$ref": "#/$defs/Citation"}}
   }
 }
@@ -1313,7 +1341,7 @@ The audit produces fully valid JSON. Fragments below define the required shape. 
     "drift_tracking": {"type": "boolean"},
     "judge_calibrated": {"type": "boolean"},
     "owner": {"type": "string"},
-    "flags": {"type": "array", "items": {"enum": ["no-golden-data", "no-ci", "no-release-gate", "regression-silenced", "model-path-uncovered", "write-tool-untested", "prompt-untested", "unversioned-evaluator", "judge-uncalibrated", "retrieval-surface-uncovered", "subagent-surface-uncovered", "protocol-surface-uncovered", "approval-path-untested", "async-lifecycle-untested", "memory-lifecycle-untested"]}},
+    "flags": {"type": "array", "items": {"enum": ["no-golden-data", "no-ci", "no-release-gate", "regression-silenced", "model-path-uncovered", "write-tool-untested", "prompt-untested", "unversioned-evaluator", "judge-uncalibrated", "retrieval-surface-uncovered", "subagent-surface-uncovered", "protocol-surface-uncovered", "approval-path-untested", "async-lifecycle-untested", "memory-lifecycle-untested", "eval-platform-deprecated"]}},
     "citations": {"type": "array", "items": {"$ref": "#/$defs/Citation"}}
   }
 }
@@ -1387,6 +1415,9 @@ The audit produces fully valid JSON. Fragments below define the required shape. 
 | Tool that delegates to model calls | `agent-runtime` plus `tool` surface |
 | Advertises a remote agent's identity, skills, auth, and capabilities | `agent-card` contract plus authority check |
 | Represents remote-agent task states, push notifications, or streaming lifecycle | `task-state` or `callback` contract plus runtime check |
+| Durable or async request lifecycle advertised by a protocol surface | `task` contract plus lifecycle check |
+| Server-delivered interactive UI (sandboxed app or iframe resource) | `ui-app` contract plus sandbox and injection check |
+| Skill package with frontmatter metadata, capability pre-approvals, or bundled executables | `agent-skill` contract plus authority and provenance check |
 
 Flag mismatches.
 
@@ -1471,6 +1502,8 @@ Agents are expected to flag deviations. Honest caveats are signal, not noise.
 | Bypass modes | any trusted workspace, auto-approve, emergency, CI, test, admin, or hook-bypass behavior |
 | Credentials | direct secrets, delegated tokens, secondary credential flows, OAuth scopes, or host-managed credentials |
 | Network/callback scope | outbound domains, webhook receivers, push notifications, replay protection, and callback authentication |
+| Agent identity | workload identity, signed agent identity (signed agent cards, signed request headers), identity-chaining or token-exchange grants binding the agent to a user or workload |
+| Delegated commerce | verifiable intent mandates, spending bounds, human-present versus delegated modes, settlement identity binding (only where an agent can initiate or approve payments) |
 | Isolation | sandbox roots, browser/computer-use restrictions, hosted-vs-local boundary, filesystem scope |
 | Audit trail | where approval, denial, bypass, credential use, and side effects are recorded |
 
@@ -1601,7 +1634,7 @@ Score each dimension 0–3 with evidence. Aggregate score is informational; the 
 - 0: External interfaces are mostly ad hoc.
 - 1: Partial schema coverage; producer/consumer or validation unclear.
 - 2: Most external interfaces are schema-defined; versioning, compatibility, protocol object separation, or workflow-overlay linkage is inconsistent.
-- 3: Interfaces (HTTP, RPC, workflow descriptions, overlays, MCP tools/resources/prompts/roots, A2A Agent Cards/skills/tasks, subagents, callbacks, provenance, cross-agent instruction contracts) are machine-defined, versioned, validated, and diff-gated.
+- 3: Interfaces (HTTP, RPC, workflow descriptions, overlays, MCP tools/resources/prompts/roots, protocol tasks and extensions, A2A Agent Cards/skills/tasks, subagents, callbacks, provenance, cross-agent instruction contracts, agent-skill packages) are machine-defined, versioned, validated, and diff-gated.
 
 ### 11.4 Tool/action surface clarity
 
@@ -1624,7 +1657,7 @@ Score each dimension 0–3 with evidence. Aggregate score is informational; the 
 - 2: Per-tool/action/principal authority declared with approval gates for write paths, but bypass/precedence/callback/secondary-credential handling may have gaps.
 - 3: Capability-scoped authority is enforced per invocation and audited; approval precedence, bypass modes, secondary credentials, callbacks, hosted/local boundaries, and computer-use/browser-use/filesystem-use sandboxes are verifiable.
 
-*Repo-operating agents (note).* Where repo-operating agents are in scope, committed authority configuration for those agents is assessed here separately from product-runtime principals. Evidence may include readable/writable scopes, approval precedence, bypass and protected-path behavior, sandbox or workspace roots, and hosted/local execution boundaries. Name capabilities, not vendor files; vendor-specific paths are examples only. If no such configuration exists, record whether that is not applicable, unknown, or an authority gap based on the repo's claimed operating model.
+*Repo-operating agents (note).* Where repo-operating agents are in scope, committed authority configuration for those agents is assessed here separately from product-runtime principals. Evidence may include readable/writable scopes, approval precedence, bypass and protected-path behavior, sandbox or workspace roots, hosted/local execution boundaries, and source-pinning or lockdown controls for customization layers (skills, hooks, plugins, protocol-server configuration). Name capabilities, not vendor files; vendor-specific paths are examples only. If no such configuration exists, record whether that is not applicable, unknown, or an authority gap based on the repo's claimed operating model. Where isolation is claimed for repo-operating, computer-use, or browser-use agents, current baseline evidence includes OS-level or micro-VM isolation, filesystem write-allowlists, secret-path read denials, and default-deny network egress with an explicit allowlist; an approval gate alone is not isolation evidence.
 
 ### 11.7 Observability semantics
 
@@ -1775,13 +1808,18 @@ The agent must check current official sources when an audit run depends on curre
 - **Arazzo or equivalent workflow-description specification** when workflow contracts exist.
 - **Overlay or equivalent API augmentation specification** when overlays exist.
 - **JSON Schema** for structured payload validation.
-- **Model Context Protocol**, including security, authorization, roots, tools, resources, resource templates, prompts, sampling, elicitation, and completion behavior, if MCP or MCP-like surfaces exist.
+- **Model Context Protocol**, including security, authorization, roots, tools, resources, resource templates, prompts, sampling, elicitation, completion, task, extension (including server-delivered UI extensions), and registry/discovery behavior, if MCP or MCP-like surfaces exist. Record the lifecycle status (core, extension, experimental, deprecated) of each protocol object in use at the pinned revision — protocol objects move between these states across revisions.
 - **OpenTelemetry semantic conventions**, including GenAI, agent, and MCP conventions when model-mediated or protocol-mediated paths exist. Record both version and stability status.
-- **A2A / inter-agent protocols**, including Agent Cards, skills, task states, streaming, push notifications, registries, and authentication if such surfaces exist.
+- **A2A / inter-agent protocols**, including Agent Cards (and their signatures), skills, task states, streaming, push notifications, registries, and authentication if such surfaces exist.
+- **Agent-skill specifications** (cross-tool skill-package formats: frontmatter contracts, capability pre-approvals, progressive disclosure) when agent-skill packages exist.
+- **Agent identity and delegated-authorization standards** (identity-chaining and token-exchange grants, signed-agent identity, workload identity) when agents act across identity boundaries.
+- **Agentic commerce and payment-delegation protocols** (verifiable intent mandates, delegation scopes, settlement identity binding) when an agent can initiate or approve payments.
 - **Provenance standards** separately for runtime/action records, content credentials, and build/source attestations where applicable.
+- **Regulatory transparency obligations** for machine-detectable marking of synthetic content, in jurisdictions where they apply, when content-provenance positions are in scope.
+- **Cost-attribution specifications for AI workloads** (token- and workload-level cost breakdown conventions) when cost attribution is in scope.
 - Relevant model-provider or agent-framework documentation for tool use, handoffs, guardrails, tracing, and evals.
-- **NIST AI RMF** when AI risk-management findings are in scope.
-- **OWASP GenAI / LLM / agentic / MCP risk materials** when security or safety findings are in scope.
+- **NIST AI RMF** and related agent-security control overlays and agent-identity guidance when AI risk-management findings are in scope.
+- **OWASP GenAI / LLM / agentic / MCP risk materials**, including the agentic-applications and agentic-skills risk lists, when security or safety findings are in scope.
 - Computer-use and browser-use sandboxing patterns from current vendor guidance.
 
 Do not assume the agent's training data reflects current versions. Record the pinned version of each anchor in `00-scope.md`.
@@ -1812,6 +1850,8 @@ Per-step boundaries are declared inline at each phase. The following apply globa
 - conflate request-local state, session state, durable conversation state, long-term memory, retrieval corpora, retrieval indexes, artifacts, and operator-authored persistent rules;
 - conflate runtime/action provenance, content provenance, and build/source provenance;
 - score missing development-stage semantic conventions as strictly as missing stable conventions without recording stability status;
+- treat a protocol object list remembered from training data as current rather than inventorying objects against the pinned protocol revision;
+- classify an agent-skill package as prose governance alone when it declares machine-readable metadata, capability pre-approvals, or bundled executables;
 - weight findings by severity alone if a strategic theme is supplied;
 - edit `profile/cycle-history.md` directly (audit proposes via `cycle-history-notes.md`; profile commits).
 
@@ -1819,7 +1859,7 @@ Per-step boundaries are declared inline at each phase. The following apply globa
 
 ## 16. Versioning
 
-This specification is **v3.3** dated 2026-06-08.
+This specification is **v3.4** dated 2026-06-09.
 
 Breaking changes bump the major version. Additive schema fields, additional examples, or clarification of existing behavior bump the minor version. Patch versions correct wording without changing behavior.
 
@@ -1882,6 +1922,18 @@ Changes from v3.2:
 - Added a developer-agent-workflow scope boundary to §0.
 - Additive only: v3.2 audits remain valid; the Profile Directive (v1.4) is consumed unchanged.
 
+Changes from v3.3:
+
+- Elevated **agent-skill packages** to first-class contracts and authority surfaces (§5.1, §6.3, Phase 4, Phase 6, §8.5, §8.7, §9.1, §11.3, §14): frontmatter contracts, capability pre-approvals (e.g., `allowed-tools`), bundled executables, and source/marketplace provenance are inventoried and flagged (`skill-frontmatter-invalid`, `skill-authority-undeclared`, `skill-provenance-unvetted`).
+- Added **protocol-object lifecycle status** recorded against the pinned protocol revision (Phase 0 step 6, Phase 4, §8.5 `protocol_object_status`, §14), so the inventory tracks deprecations and extensions instead of hard-coding an object list; added protocol tasks, extension declarations, server-delivered UI surfaces, and registry/discovery metadata as inventoryable objects (Phases 3, 4, 6, 8; §8.4, §8.5, §9.1).
+- Added **agent identity** and **delegated commerce** evidence targets to Phase 6 and the authority matrix (§9.7 rows; `commerce-delegation-unbounded`, `commerce-mandate-missing` flags). Commerce checks apply only where an agent can initiate or approve payments.
+- Added **customization supply-chain** checks (skills, hooks, plugins, protocol-server configuration consumed by repo-operating agents) under the agent-operability lens (§2.3, Phase 6, §8.7 `customization-source-unpinned`, §11.6 note).
+- Added a hosted-eval **platform-lifecycle** flag (Phase 9, §8.10 `eval-platform-deprecated`).
+- Calibrated the §11.6 isolation-baseline note (OS-level or micro-VM sandbox, filesystem write-allowlists, secret-path read denials, default-deny egress).
+- Refreshed the §14 reference anchors (agent-skill specifications, agent identity and delegated authorization, agentic commerce, synthetic-content transparency obligations, AI cost-attribution conventions).
+- Additive only: v3.3 audits remain valid. Profiles from Directive v1.4 are consumed unchanged; Directive v1.5 adds optional discovery fields this specification consumes when present.
+- Rationale recorded in `adr/0002-skills-as-contracts-and-protocol-object-lifecycle.md`.
+
 ## Appendix A — Migration from v2 to v3.x
 
 For projects with a v2 audit cycle on file:
@@ -1927,3 +1979,15 @@ For projects with a v3.2 audit cycle on file:
 2. Optionally adopt the `agent-operability` strategic theme (§11.12) for a coherent operability reading; it reweights existing dimensions and adds no scored dimension, so prior scores are unaffected.
 3. Where repo-operating agents are in scope, assess their committed authority configuration under §11.6 (distinct from product-runtime principals).
 4. No phase or scoring change; v3.2 findings remain valid, and the Profile Directive (v1.4) is consumed unchanged.
+
+---
+
+## Appendix E — Migration from v3.3 to v3.4
+
+For projects with a v3.3 audit cycle on file:
+
+1. Preserve the v3.3 audit artifacts as the historical record.
+2. Re-run Phase 4 where agent-skill packages exist: inventory each skill's frontmatter contract, capability pre-approvals, bundled executables, and source provenance; route capability grants to Phase 6.
+3. In Phase 0, re-pin protocol revisions per §14 and record the lifecycle status of each protocol object in use; flag `protocol-object-deprecated` where the project relies on objects deprecated at the pinned revision without a migration position.
+4. Re-run Phase 4 and Phase 6 for protocol tasks, extension declarations (including server-delivered UI), registry/discovery metadata, and — only where an agent can initiate or approve payments — delegated-commerce contracts.
+5. No scoring change: prior dimension scores remain valid. New flags surface as new findings against the same rubric.

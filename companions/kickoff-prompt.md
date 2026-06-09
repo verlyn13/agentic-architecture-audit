@@ -1,10 +1,10 @@
 # Audit Kickoff Prompt — Copy/Paste to Your Coding Agent
 
-**Derived guidance targets:** Agentic Architecture Audit Specification v3.3 (2026-06-08) and Project Profile Discovery Directive v1.4 (2026-06-07). If this prompt conflicts with the full spec, the full spec wins.
+**Derived guidance targets:** Agentic Architecture Audit Specification v3.4 (2026-06-09) and Project Profile Discovery Directive v1.5 (2026-06-09). If this prompt conflicts with the full spec, the full spec wins.
 
 ```
-You are running the Agentic Architecture Audit per the v3.3 specification at
-`audit-spec.md` (full spec, ~1900 lines). Read that file in full
+You are running the Agentic Architecture Audit per the v3.4 specification at
+`audit-spec.md` (full spec, ~2000 lines). Read that file in full
 before doing anything else. This message is the kickoff; the spec is authoritative.
 If `MANIFEST.md` exists beside the spec, read it after the
 spec and before preflight.
@@ -35,7 +35,7 @@ If `project_profile.yaml` is MISSING, halt immediately. Do NOT attempt to
 discover the project yourself — that is the profile directive's job, not the
 audit's. Tell the operator: "Profile snapshot missing at `profile/<date>/`.
 Run `profile-directive.md` using Project Profile Discovery Directive
-v1.4 first, then re-invoke this audit."
+v1.5 first, then re-invoke this audit."
 
 If the profile exists but is older than 7 days OR predates significant code
 changes, recommend a profile refresh before proceeding, but do not block.
@@ -54,8 +54,13 @@ changes, recommend a profile refresh before proceeding, but do not block.
 - Phase 10.5 (smoke-test) is non-skippable. Re-check every finding against
   the current working branch before writing `SUMMARY.md`.
 - Protocol surfaces are first-class. Do not collapse MCP tools/resources/
-  prompts/roots, A2A Agent Cards/skills/tasks, workflow descriptions, overlays,
-  callbacks, hosted tools, or remote agents into a generic "tool" bucket.
+  prompts/roots, protocol tasks and extensions (including server-delivered UI),
+  A2A Agent Cards/skills/tasks, workflow descriptions, overlays, callbacks,
+  hosted tools, or remote agents into a generic "tool" bucket. Record each
+  protocol object's lifecycle status against the pinned protocol revision.
+- Agent-skill packages are contracts and authority surfaces, not just prose:
+  inventory frontmatter, capability pre-approvals (e.g., `allowed-tools`),
+  bundled executables, and source/marketplace provenance.
 - Authority is a matrix. Record approval mode, precedence, bypass modes,
   protected paths, secondary credentials, callback authentication, hosted/local
   boundaries, and enforcement evidence.

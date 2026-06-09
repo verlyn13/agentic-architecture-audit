@@ -1,6 +1,6 @@
 # What This Audit Does (Friendly Version)
 
-This explainer targets Agentic Architecture Audit Specification v3.3 (2026-06-08) and Project Profile Discovery Directive v1.4 (2026-06-07). If it conflicts with the spec, the spec wins.
+This explainer targets Agentic Architecture Audit Specification v3.4 (2026-06-09) and Project Profile Discovery Directive v1.5 (2026-06-09). If it conflicts with the spec, the spec wins.
 
 You built something with AI. Maybe it works. Maybe it mostly works. Maybe you can feel it getting harder to change without breaking, and you're starting to wonder if you've painted yourself into a corner.
 
@@ -14,7 +14,9 @@ AI-generated code has its own failure modes. Most of them aren't bugs — they'r
 
 **Tools have more authority than they should.** A tool called `read_user_data` actually has database write access because the underlying function does both, and nobody noticed. The model name says "read" but the implementation says "do anything."
 
-**Protocol surfaces hide real contracts.** MCP tools, resources, prompts, roots, A2A Agent Cards, remote-agent skills, workflow descriptions, callbacks, and background tasks can all carry different risks. If they're flattened into "the tool server," the audit will miss where authority and state actually cross boundaries.
+**Protocol surfaces hide real contracts.** MCP tools, resources, prompts, roots, tasks, extensions, A2A Agent Cards, remote-agent skills, workflow descriptions, callbacks, and background tasks can all carry different risks. If they're flattened into "the tool server," the audit will miss where authority and state actually cross boundaries. Protocols also move: objects get added, become extensions, or get deprecated between revisions, so the audit records what revision it checked against.
+
+**Skills carry real authority.** A skill package that pre-approves tools or ships executable scripts is a contract and an authority surface, not just documentation — especially when it was installed from a marketplace and nobody recorded where it came from.
 
 **Memory and state get tangled.** Request-local state, session history, durable conversations, long-term memory, user preferences, RAG corpus, retrieval indexes, scratch notes, operator rules, audit logs — all dumped into a generic "memory" that nobody owns and nobody can clear.
 
@@ -102,5 +104,5 @@ The worst version of running this audit is doing it once, ignoring it, and forge
 
 ---
 
-Spec reference: `audit-spec.md` (full v3.3 specification, 2026-06-08).
-Precursor: `profile-directive.md` (v1.4) — run this first to produce the profile snapshot the audit consumes.
+Spec reference: `audit-spec.md` (full v3.4 specification, 2026-06-09).
+Precursor: `profile-directive.md` (v1.5) — run this first to produce the profile snapshot the audit consumes.
