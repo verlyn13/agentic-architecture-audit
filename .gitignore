@@ -18,3 +18,7 @@ __pycache__/
 # If you run this package against itself, keep generated artifacts out of git:
 /profile/
 /audit/
+
+# Review inputs are "intentionally not bundled" (MANIFEST.md): accepted items are
+# transcribed through an ADR; the reports themselves stay out of git.
+/improvement-report-*.md
