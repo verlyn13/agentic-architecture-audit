@@ -60,6 +60,16 @@ Section-number references are resolved against the **specific** authority text a
 so a reference attributed to the wrong authority is caught, not just an unknown number.
 Steps 4–5 remain human review.
 
+**Identifier convention:** self-audit fitness-function and finding ids (`FF-NNN`, `F-NNN`)
+are **per-cycle** identifiers — each audit cycle starts its own namespace. Any live, undated
+surface that outlives its cycle (README, configs, instruction files, commit messages) must
+cycle-qualify them, e.g. `2026-06-07/FF-004` (the drift linter) vs `2026-06-08/FF-001` (its
+self-test). Dated artifacts carry their cycle context and keep bare ids: cycle outputs,
+`CHANGELOG.md` entries, and ADRs (dated by their Status/Source header and frozen once
+merged — never retro-edited).
+(Adopted 2026-06-10 via `adr/0003-cross-application-review-dispositions.md`; the spec-level
+durable-id rule remains a queued proposal.)
+
 This package is expected to pass the profile directive's Phase D (conventions) drift check.
 
 ## Release provenance

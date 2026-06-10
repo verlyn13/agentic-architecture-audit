@@ -15,9 +15,16 @@ Two files are **authority texts**. Their content is canonical and stable:
 - `audit-spec.md` — Agentic Architecture Audit Specification (version declared in its header).
 - `profile-directive.md` — Project Profile Discovery Directive (version declared in its header).
 
-Everything under `companions/` is **derived** guidance. `MANIFEST.md` records the
+Everything under `companions/` is **derived** guidance, as is the portable cross-agent skill
+`.agents/skills/run-agentic-audit/SKILL.md` (a thin wrapper that defers to
+`companions/kickoff-prompt.md` and carries no independent version — when the procedure
+changes, update the kickoff prompt and keep the skill thin). `MANIFEST.md` records the
 authority/derived mapping and the drift-control procedure. **If a companion ever conflicts with
 an authority text, the authority text wins** — fix the companion, never the authority text.
+
+Authority-text cuts are recorded as ADRs in `adr/` (numbered, kebab-case, following the
+established header and section order). Reversing a recorded decision requires a superseding
+ADR.
 
 ## Setup and checks
 
@@ -25,6 +32,18 @@ There is no build, install step, or test suite. The single quality gate is repo 
 
 - `pre-commit run --all-files` — also enforced in CI (`.github/workflows/hygiene.yml`).
 - Optional local install: `pipx install pre-commit && pre-commit install`.
+- The gate includes the companion/version drift linter (`python3 scripts/check_drift.py`,
+  self-audit 2026-06-07/FF-004) and its negative self-test (`python3 scripts/check_drift.py
+  --self-test`, 2026-06-08/FF-001); both run directly with plain `python3` when diagnosing a
+  failure. A drift failure means a **content** fix (versions, section refs, links), never a
+  formatting fix.
+- The linter scans **git-tracked** markdown only — `git add` a new file, then lint, before
+  trusting a clean result. Two commit-blocking rules to know up front: a line that names
+  exactly one authority text binds every section reference on that line to that text's real
+  headings, and a lettered (profile-directive) phase described as an audit phase is flagged.
+  The full convention — lettered phases belong to the profile directive, numbered phases to
+  the audit spec, never attribute one text's phase style to the other — holds in both
+  directions, but only the lettered-as-audit direction is mechanically gated.
 
 ## Editing discipline (read before changing anything)
 
@@ -40,12 +59,21 @@ There is no build, install step, or test suite. The single quality gate is repo 
    (`companions/kickoff-prompt.md`, `companions/explainer.md`). Keep it consistent —
    inconsistency is exactly the drift this package teaches you to catch.
 4. **The YAML schema identifiers are not filenames.** In `profile-directive.md`,
-   `directive_version: "project-profile-directive-v1.4"` and
-   `audit_spec_target: "agentic-audit-spec-v3.1"` are version identifiers emitted into a profile
-   snapshot. Do **not** rename them to match the published filenames.
+   `directive_version` (currently `"project-profile-directive-v1.5"` — it tracks the
+   directive's header version at each cut) and `audit_spec_target` (pinned at
+   `"agentic-audit-spec-v3.1"` — the deliberate consumption baseline, per ADR 0002) are
+   version identifiers emitted into a profile snapshot. Do **not** rename them to match the
+   published filenames, and do **not** "fix" the directive body's v3.1 baseline references
+   as drift — they are intentional even though the spec header reads a later version.
 5. **Runtime outputs are not repo files.** A real run writes `profile/<date>/...` and
    `audit/<date>/...` *inside the target project being audited*, never here. `.gitignore` excludes
-   them. Do not create, "restore," or flag those paths as missing in this repo.
+   them. Do not create, "restore," or flag those paths as missing in this repo. (A self-run
+   targets this repo, so dated artifacts may exist on disk here — they are legitimate prior-run
+   evidence to read, never to commit or delete.)
+6. **Review inputs stay untracked.** Improvement/review reports (e.g.
+   `improvement-report-<date>-*.md`) are input evidence per `MANIFEST.md` ("Not bundled"):
+   keep them out of git (`.gitignore` covers the pattern) and transcribe accepted items
+   through an ADR. Do not commit or delete them during a "cleanup".
 
 ## Conventions
 
@@ -69,9 +97,12 @@ There is no build, install step, or test suite. The single quality gate is repo 
 - A change to an **authority text** bumps the package **minor** or **major**.
 - A **companion-only** edit bumps the **patch**.
 - Every release is a **signed** git tag whose message names the contained authority versions.
-  `CHANGELOG.md` records package history and authority-text lineage.
-- Before any release, run the `MANIFEST.md` drift check (5 steps). This package is expected to
-  pass its own conventions/drift check (see `MANIFEST.md`).
+  `CHANGELOG.md` records package history and authority-text lineage. A release also syncs
+  `CITATION.cff` (version + date-released) and, for an authority cut, ships the ADR.
+- Before any release, run the `MANIFEST.md` drift check (5 steps) and record release
+  provenance per evidence lane — the checklist lives in `CONTRIBUTING.md` ("Releasing and
+  provenance verification"). This package is expected to pass its own conventions/drift
+  check (see `MANIFEST.md`).
 
 ## Done means
 
@@ -85,3 +116,5 @@ There is no build, install step, or test suite. The single quality gate is repo 
 - Running the audit on a project? `companions/kickoff-prompt.md` is the copy/paste prompt; it
   points at the two authority texts.
 - A real applied run is linked from `examples/README.md`.
+- The published repository is `verlyn13/agentic-architecture-audit`; the local directory name
+  (`audit-spec`) is not the repo slug — do not derive GitHub URLs from it.

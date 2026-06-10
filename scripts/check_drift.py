@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""FF-004 — companion + version drift linter.
+"""Companion + version drift linter (self-audit 2026-06-07/FF-004).
 
 Automates the manual MANIFEST.md drift check ("## Drift check", 5 steps) so companions
 can never silently drift from the authority texts. Run by pre-commit (a local hook) and
@@ -61,7 +61,7 @@ SECTION_REF_IGNORE = "drift-check: ignore-section-ref"
 SECTION_REF_RE = re.compile(r"§\s*(\d+(?:\.\d+)?)")
 SECTION_HEADING_RE = re.compile(r"^#{1,6}\s+(?:Phase\s+)?(\d+(?:\.\d+)?)(?=[\s.`—–-]|$)")
 # Authority names as written in prose, used to bind a §-reference to the specific
-# authority it cites (FF-001). Deliberately matches only the CANONICAL identifiers:
+# authority it cites (2026-06-08/FF-001). Deliberately matches only the CANONICAL identifiers:
 # `audit[\s-]spec` (also "Audit Specification") and `profile[\s-]?directive` (also the
 # `*-directive.md` filename). Ambiguous short forms ("the spec", "the directive") and the
 # long form "Project Profile Discovery Directive" do NOT match and fall through to the
@@ -188,7 +188,7 @@ def unresolved_section_refs(line: str, sections: dict[str, set[str]]) -> list[tu
 
     If the line names exactly one authority text, every §-reference on it must resolve
     against THAT text's headings — so `profile directive §11.12` is caught, because
-    §11.12 exists only in `audit-spec.md` (FF-001). If the line names both authorities
+    §11.12 exists only in `audit-spec.md` (2026-06-08/FF-001). If the line names both authorities
     or neither, fall back to existence across the merged set (the prior behavior); that
     keeps correctly-attributed lines such as `§11.12 of audit-spec.md` and bare refs
     green. Lines carrying the ignore marker are skipped entirely.
@@ -253,9 +253,9 @@ def check_8_links_resolve() -> None:
 
 
 def self_test() -> int:
-    """In-memory checks for the authority-aware §-reference resolver (FF-001).
+    """In-memory checks for the authority-aware §-reference resolver (self-audit 2026-06-08/FF-001).
 
-    Guards the F-001 regression directly: a §-reference attributed to one authority
+    Guards the 2026-06-08/F-001 regression directly: a §-reference attributed to one authority
     text but naming a section that exists only in the other must be caught, while
     correctly-attributed, bare, ambiguous, and ignore-marked references must pass.
     Wired into pre-commit as its own hook so the negative test can never silently rot.
@@ -286,7 +286,7 @@ def self_test() -> int:
         if flagged != expect:
             ok = False
         print(f"  [{'PASS' if flagged == expect else 'FAIL'}] expect={expect!s:5} got={flagged!s:5} :: {note}")
-    print("FF-001 self-test PASSED" if ok else "FF-001 self-test FAILED")
+    print("2026-06-08/FF-001 self-test PASSED" if ok else "2026-06-08/FF-001 self-test FAILED")
     return 0 if ok else 1
 
 
@@ -309,11 +309,11 @@ def main() -> int:
     check_8_links_resolve()
 
     if failures:
-        print(f"\nFF-004 drift check FAILED — {len(failures)} issue(s):")
+        print(f"\n2026-06-07/FF-004 drift check FAILED — {len(failures)} issue(s):")
         for f in failures:
             print(f"  - {f}")
         return 1
-    print("FF-004 drift check passed — companions and cross-references are consistent.")
+    print("2026-06-07/FF-004 drift check passed — companions and cross-references are consistent.")
     return 0
 
 

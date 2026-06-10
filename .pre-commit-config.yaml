@@ -20,20 +20,22 @@ repos:
       - id: check-added-large-files
         args: [--maxkb=10240]
 
-  # Local: FF-004 companion/version drift linter (automates the MANIFEST.md drift check).
-  # Whole-repo consistency check, so it always runs regardless of which files changed.
+  # Local: companion/version drift linter (self-audit 2026-06-07/FF-004) — automates the
+  # MANIFEST.md drift check. Whole-repo consistency check, so it always runs regardless of
+  # which files changed. FF ids are per-cycle, hence the date qualifiers (MANIFEST.md).
   - repo: local
     hooks:
       - id: drift-check
-        name: companion/version drift check (FF-004)
+        name: companion/version drift check (2026-06-07/FF-004)
         entry: python3 scripts/check_drift.py
         language: system
         pass_filenames: false
         always_run: true
-      # FF-001: the drift linter's own negative test (authority-aware §-ref resolution).
-      # Guards against the F-001 regression where a wrong-authority section ref passed.
+      # Self-audit 2026-06-08/FF-001: the drift linter's own negative test (authority-aware
+      # §-ref resolution). Guards against the 2026-06-08/F-001 regression where a
+      # wrong-authority section ref passed.
       - id: drift-check-selftest
-        name: drift linter self-test (FF-001)
+        name: drift linter self-test (2026-06-08/FF-001)
         entry: python3 scripts/check_drift.py --self-test
         language: system
         pass_filenames: false

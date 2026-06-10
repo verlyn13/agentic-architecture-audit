@@ -37,8 +37,10 @@ pre-commit run --all-files
 
 CI (`.github/workflows/hygiene.yml`) runs the same `pre-commit run --all-files`, so the
 gate is enforced whether or not you installed the local hook. The gate includes
-[`scripts/check_drift.py`](scripts/check_drift.py) (the FF-004 companion/version drift
-linter) and its FF-001 self-test (`python3 scripts/check_drift.py --self-test`).
+[`scripts/check_drift.py`](scripts/check_drift.py) (the companion/version drift linter,
+self-audit 2026-06-07/FF-004) and its self-test (self-audit 2026-06-08/FF-001;
+`python3 scripts/check_drift.py --self-test`). Fitness-function ids are per-cycle, so
+they are cycle-qualified wherever they outlive their cycle (see `MANIFEST.md`).
 
 Also wire the commit-message template once per clone:
 
@@ -65,7 +67,7 @@ edit — companions, tooling, or governance — is a **patch** (see [`AGENTS.md`
 
 Before tagging a release, run the `MANIFEST.md` drift check, then **record which release
 claims were verified through which evidence lane** — these are different facts and must
-not be conflated (this is the FF-002 discipline):
+not be conflated (this is the 2026-06-08/FF-002 discipline):
 
 - **Repo-local, verifiable now:** authority versions/dates parsed from the headers, the
   drift linter and its self-test, signed tags (`git tag -v <tag>`), and local commit

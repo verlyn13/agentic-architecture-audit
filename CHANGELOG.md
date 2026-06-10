@@ -11,6 +11,33 @@ companion-only edit bumps the **patch**.
 
 ## [Unreleased]
 
+Companion/tooling patch — no authority-text change. Processes the 2026-06-10
+cross-application review (run against an independently governed agentic repo, "HCS");
+the report itself stays untracked per `MANIFEST.md` ("Not bundled"). Rationale and the
+full disposition record in `adr/0003-cross-application-review-dispositions.md`.
+
+- **Identifier convention adopted (weak form of the queued P-001):** self-audit FF/F ids
+  are per-cycle and are now cycle-qualified on live, undated surfaces — `README.md`,
+  `.pre-commit-config.yaml` hook display names (hook ids unchanged), `CONTRIBUTING.md`,
+  and `scripts/check_drift.py` display strings (e.g. `2026-06-07/FF-004`,
+  `2026-06-08/FF-001`). Convention recorded in `MANIFEST.md`. Resolves the review's
+  confirmed defects R-001/R-002.
+- **Two review defects refuted on adversarial re-verification** and recorded in ADR 0003
+  so they are not re-raised: R-003 (`.codex/` is gitignored personal scaffolding, never
+  shipped) and R-004 (the `--no-verify` ban has eight statements, not five, with
+  `AGENTS.md` as the named canonical home).
+- **Review-input handling:** `.gitignore` now excludes `/improvement-report-*.md`;
+  the convention (untracked input evidence, transcribed via ADR) is documented in
+  `AGENTS.md`.
+- **Instruction-file currency** (`AGENTS.md`, `CLAUDE.md`): the stale
+  `directive_version` example literal updated to the v1.5 value and the pinned
+  `audit_spec_target` v3.1 consumption baseline explained (do not "fix" it as drift);
+  drift-linter behavior, scope, and commit-blocking rules documented; the
+  `.agents/skills/run-agentic-audit/SKILL.md` derived surface, ADR convention,
+  release/provenance steps, and published repo slug recorded.
+- **Queued for a future deliberate cut** (Audit Spec v3.5 / Profile Directive v1.6):
+  thirteen additive proposals, dispositioned in ADR 0003's table.
+
 ## [1.4.0] - 2026-06-09
 
 Cuts **Agentic Architecture Audit Specification v3.4** (was v3.3) and **Project Profile
