@@ -11,10 +11,33 @@ companion-only edit bumps the **patch**.
 
 ## [Unreleased]
 
-Companion/tooling patch — no authority-text change. Processes the 2026-06-10
-cross-application review (run against an independently governed agentic repo, "HCS");
-the report itself stays untracked per `MANIFEST.md` ("Not bundled"). Rationale and the
-full disposition record in `adr/0003-cross-application-review-dispositions.md`.
+Companion/tooling patches — no authority-text change. Two batches, both sourced from the
+2026-06-10 cross-application review (run against an independently governed agentic repo,
+"HCS"); the report itself stays untracked per `MANIFEST.md` ("Not bundled"). Rationale
+and the full disposition record in `adr/0003-cross-application-review-dispositions.md`.
+
+**Pre-cut gate hardening (2026-06-10, follow-through on ADR 0003):**
+
+- **Drift linter, three new commit-blocking rules**, each shipped with a negative
+  self-test wired into `--self-test`: bare per-cycle `FF-`/`F-` ids flagged on every
+  tracked surface except the authority texts, `CHANGELOG.md`, `adr/`, and `examples/`
+  (mechanizes the identifier convention); `MANIFEST.md` content-hash binding of the
+  three derived files to the current authority texts (the review's P-013;
+  `--print-bindings` regenerates the lines, cut-time re-attestation documented in
+  `CONTRIBUTING.md`); and `AGENTS.md` must quote the directive's current
+  `directive_version`/`audit_spec_target` schema-identifier literals, forcing the
+  instruction file to update with any cut that changes either literal. `MANIFEST.md`'s
+  automation claims updated to state exactly what is and is not gated.
+- **`DECISIONS.md` standing decision ledger** (the review's P-012, part (a)): durable
+  `D-NNN` ids seeding the thirteen dispositioned proposals with their current statuses
+  (restated in package terms), the two rejected review defects with reasons, and the
+  open decisions; the restatement-policing check is explicitly recorded as not built.
+- **Inline `(per AGENTS.md)` cites** on the hook-bypass-ban restatements in
+  `companions/kickoff-prompt.md`, `.github/pull_request_template.md`, and
+  `CONTRIBUTING.md` (closes the residual the review's R-004 left behind).
+- **ADR 0003 marked Accepted** (operator-approved; its patch scope landed via PR #11).
+
+**Review dispositions (2026-06-10, landed via PR #11):**
 
 - **Identifier convention adopted (weak form of the queued P-001):** self-audit FF/F ids
   are per-cycle and are now cycle-qualified on live, undated surfaces — `README.md`,

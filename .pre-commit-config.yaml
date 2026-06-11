@@ -31,11 +31,12 @@ repos:
         language: system
         pass_filenames: false
         always_run: true
-      # Self-audit 2026-06-08/FF-001: the drift linter's own negative test (authority-aware
-      # §-ref resolution). Guards against the 2026-06-08/F-001 regression where a
-      # wrong-authority section ref passed.
+      # The drift linter's own negative tests: the authority-aware §-ref resolver
+      # (self-audit 2026-06-08/FF-001 — guards the 2026-06-08/F-001 wrong-authority
+      # regression) plus the 2026-06-10 gate-hardening rules (bare-cycle-id, AGENTS.md
+      # literal currency, content-hash binding; ADR 0003 follow-through).
       - id: drift-check-selftest
-        name: drift linter self-test (2026-06-08/FF-001)
+        name: drift linter self-test (2026-06-08/FF-001 + 2026-06-10 gate rules)
         entry: python3 scripts/check_drift.py --self-test
         language: system
         pass_filenames: false

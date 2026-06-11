@@ -56,7 +56,8 @@ git config commit.template .gitmessage
    Line endings are LF everywhere and enforced — never hand-fix them.
 3. Run `pre-commit run --all-files` until it is clean.
 4. Use [Conventional Commits](https://www.conventionalcommits.org/) (`type(scope):
-   description`) and **sign** your commits. Never use `--no-verify` or any hook bypass.
+   description`) and **sign** your commits. Never use `--no-verify` or any hook bypass
+   (per [`AGENTS.md`](AGENTS.md)).
 5. Open a PR with the provided template and let CI go green before merge.
 
 A change to an authority text is a **minor** or **major** bump; any other (non-authority)
@@ -82,6 +83,15 @@ A release note or self-audit that claims "protected `main`, green CI, signed com
 must separate these lanes instead of asserting them as one verified fact. Every release
 is a **signed** git tag whose message names the contained authority versions, with a
 matching `CHANGELOG.md` entry.
+
+An **authority cut** additionally re-attests the content-hash binding: after re-syncing
+the companions and the skill to the new authority texts, regenerate the "Content-hash
+binding" lines in `MANIFEST.md` with `python3 scripts/check_drift.py --print-bindings`,
+**replacing** the previous lines (a duplicate line per derived file fails the gate).
+The drift linter fails until the recorded hashes match the new authority content, so a
+cut cannot ship a stale attestation — but the hashes only prove *when* each derived file
+was last attested, not that its prose is right; semantic agreement stays on the human
+reviewer (drift-check steps 4–5).
 
 ## Reporting problems
 

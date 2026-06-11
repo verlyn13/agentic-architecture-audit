@@ -10,7 +10,7 @@
 
 ## Done checklist
 
-- [ ] `pre-commit run --all-files` passes (hygiene green; no `--no-verify`)
+- [ ] `pre-commit run --all-files` passes (hygiene green; no `--no-verify`, per AGENTS.md)
 - [ ] Companions still declare the authority versions recorded in `MANIFEST.md`
 - [ ] Repo-relative cross-references resolve
 - [ ] Authority texts unchanged, or changed only as a deliberate version cut

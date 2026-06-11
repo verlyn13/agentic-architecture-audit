@@ -1,8 +1,7 @@
 # ADR 0003 — Identifiers are cycle-qualified now; thirteen cross-application proposals are queued for the next cuts
 
-- **Status:** Proposed — 2026-06-10 (package-level patch fixes applied with this ADR; the
-  queued authority-text proposals await an operator-approved Audit Spec v3.5 / Profile
-  Directive v1.6 cut)
+- **Status:** Accepted — 2026-06-10 (operator-approved; patch scope applied via PR #11;
+  the v3.5/v1.6 proposals remain queued)
 - **Decider:** Jeffrey V. Johnson
 - **Source:** cross-application review, 2026-06-10 — the spec and directive were run in
   comparison against an independently governed agentic substrate repo ("HCS": a typed
