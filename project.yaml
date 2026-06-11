@@ -1,0 +1,17 @@
+spec_version: 0.1
+project:
+  id: agentic-architecture-audit
+  display_name: Agentic Architecture Audit
+  owner_entity: verlyn13
+role: canonical
+peers: []
+status:
+  posture: public-package
+  local_phase: "v1.4.0 tagged; 1.5.0 cut (Audit Spec v3.5 + Profile Directive v1.6)"
+  as_of: 2026-06-11
+authority:
+  status_of_record: MANIFEST.md
+presentation:
+  visibility: public-promoted
+  public_alias: null
+  link_policy: link-ok
