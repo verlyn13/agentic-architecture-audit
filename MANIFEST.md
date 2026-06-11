@@ -23,6 +23,31 @@ an authority text, the authority text wins.**
 | `companions/explainer.md` | Operator-facing explainer | Audit Spec v3.4 and Profile Directive v1.5 |
 | `.agents/skills/run-agentic-audit/SKILL.md` | Cross-agent skill entry point for running the audit | Defers to `companions/kickoff-prompt.md` (no independent version) |
 
+### Content-hash binding
+
+Each derived file is attested against the exact authority-text content (sha256 of file
+bytes) it was last synced to. The drift linter compares these lines against the current
+authority texts and fails on divergence — including a duplicate or unrecognized binding
+line — so an authority cut cannot ship a stale or ambiguous attestation. The hash gate
+enforces the re-attestation; re-syncing the derived files first is the documented cut
+procedure, not something the hashes can prove (regenerate the lines with
+`python3 scripts/check_drift.py --print-bindings`, **replacing** the previous lines; the
+cut-time procedure is in [`CONTRIBUTING.md`](CONTRIBUTING.md) under "Releasing and
+provenance verification").
+Adopted 2026-06-10 (the review's P-013) via
+`adr/0003-cross-application-review-dispositions.md`.
+
+```text
+companions/kickoff-prompt.md @ audit-spec.md=sha256:5156e43ce4b65e5fdf493dfb4c6d88fe4486aeff162f3879673acd49b4d05144 profile-directive.md=sha256:54c5d10e8a41494bf809601cd2ceed30985208c25ed82a91fd392f47c401b681
+companions/explainer.md @ audit-spec.md=sha256:5156e43ce4b65e5fdf493dfb4c6d88fe4486aeff162f3879673acd49b4d05144 profile-directive.md=sha256:54c5d10e8a41494bf809601cd2ceed30985208c25ed82a91fd392f47c401b681
+.agents/skills/run-agentic-audit/SKILL.md @ audit-spec.md=sha256:5156e43ce4b65e5fdf493dfb4c6d88fe4486aeff162f3879673acd49b4d05144 profile-directive.md=sha256:54c5d10e8a41494bf809601cd2ceed30985208c25ed82a91fd392f47c401b681
+```
+
+The binding is to the **authority** content, not the derived file's own bytes: a stale
+hash means "this derived file was last attested against authority text that has since
+changed." Whether the derived prose *semantically* agrees with the authority texts
+(drift-check steps 4–5) remains human review.
+
 ## Versioning
 
 The package version (see `CHANGELOG.md` and the git tags) tracks the directive set as a
@@ -58,6 +83,11 @@ Steps 1–3 and cross-reference resolution are **automated** by `scripts/check_d
 pre-commit hook that also runs in CI (the hygiene workflow runs `pre-commit run --all-files`).
 Section-number references are resolved against the **specific** authority text a line names,
 so a reference attributed to the wrong authority is caught, not just an unknown number.
+Since 2026-06-10 the linter also enforces: the identifier convention below (bare-id
+flagging, with exactly the exclusions stated there); the "Content-hash binding" lines
+above against the current authority texts; and that `AGENTS.md` quotes the directive's
+current `directive_version` / `audit_spec_target` schema-identifier literals. Each of
+these rules carries a negative self-test in `scripts/check_drift.py --self-test`.
 Steps 4–5 remain human review.
 
 **Identifier convention:** self-audit fitness-function and finding ids (`FF-NNN`, `F-NNN`)
@@ -69,6 +99,10 @@ self-test). Dated artifacts carry their cycle context and keep bare ids: cycle o
 merged — never retro-edited).
 (Adopted 2026-06-10 via `adr/0003-cross-application-review-dispositions.md`; the spec-level
 durable-id rule remains a queued proposal.)
+Mechanically enforced since the 2026-06-10 gate hardening: the drift linter flags a bare
+`FF-`/`F-` id (three digits, no `YYYY-MM-DD/` qualifier) on every git-tracked surface
+except the authority texts, `CHANGELOG.md`, `adr/`, and `examples/`; a genuinely
+cycle-free line may opt out with the inline marker `drift-check: ignore-bare-id`.
 
 This package is expected to pass the profile directive's Phase D (conventions) drift check.
 

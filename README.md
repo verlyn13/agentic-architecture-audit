@@ -42,6 +42,7 @@ New to this? Start with `companions/explainer.md`. It's the plain-language versi
 | [`companions/kickoff-prompt.md`](companions/kickoff-prompt.md) | Copy/paste prompt for the audit agent. |
 | [`MANIFEST.md`](MANIFEST.md) | Drift control: authority versions and companion targets. |
 | [`CHANGELOG.md`](CHANGELOG.md) | Package history and authority-text lineage. |
+| [`DECISIONS.md`](DECISIONS.md) | Standing decision ledger (durable `D-NNN` ids): queued proposals, rejections, open questions. ADRs in [`adr/`](adr/0001-agent-operability-as-theme.md) carry the full rationale. |
 | [`CITATION.cff`](CITATION.cff) | How to cite this methodology. |
 | [`LICENSE`](LICENSE) | Apache-2.0. |
 | [`examples/`](examples/README.md) | A real, public run of this audit. |

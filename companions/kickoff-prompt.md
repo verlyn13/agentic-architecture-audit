@@ -199,7 +199,7 @@ that survives Phase 10.5.
 ## Things you will be tempted to do, and shouldn't
 
 - Skip Phase 10.5 because findings "look solid." (Don't.)
-- Use `--no-verify` or any hook-bypass mechanism. (Forbidden globally.)
+- Use `--no-verify` or any hook-bypass mechanism. (Forbidden globally, per `AGENTS.md`.)
 - Cite something you cannot read in-session. (Forbidden.)
 - Reproduce more than 15 words verbatim from any one source. (Forbidden.)
 - Write `SUMMARY.md` before Phase 10.5 artifacts exist. (Forbidden.)

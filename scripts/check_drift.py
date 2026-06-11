@@ -17,7 +17,8 @@ version-lineage sections or on CHANGELOG.md history):
      **Version:** line.
   2. MANIFEST authority table     — matches the headers (version + date), exactly.
   3. Current targets declared     — MANIFEST's derived table and both companions declare
-     the CURRENT authority versions/dates.
+     the CURRENT authority versions/dates, and AGENTS.md quotes the directive's current
+     `directive_version` / `audit_spec_target` schema-identifier literals.
   4. No conflicting versions      — in consumer files (companions, MANIFEST, README), every
      v3.x token equals the spec version and every v1.x token the directive version.
   5. No stale filenames           — the pre-rename filenames appear only in CHANGELOG.md.
@@ -29,12 +30,19 @@ version-lineage sections or on CHANGELOG.md history):
      as audit phases.
   8. Links resolve                — repo-relative Markdown links and CLAUDE.md @imports point
      at files that exist.
+  9. Ids are cycle-qualified      — a bare FF-/F- per-cycle id (three digits, no
+     YYYY-MM-DD/ qualifier) is flagged on every tracked surface except the authority
+     texts, CHANGELOG.md, adr/, and examples/, which carry their own cycle context.
+ 10. Companion hash binding       — MANIFEST.md's "Content-hash binding" lines match the
+     current sha256 of both authority texts; an authority cut re-syncs the derived files
+     and then re-attests the lines (`--print-bindings` emits the current correct lines).
 
 Exit 0 = clean; exit 1 = drift found (each failure is printed). Stdlib only.
 """
 
 from __future__ import annotations
 
+import hashlib
 import re
 import subprocess
 import sys
@@ -73,6 +81,30 @@ AUTHORITY_NAME_RE = {
     "profile-directive.md": re.compile(r"profile[\s-]?directive", re.I),
 }
 AUDIT_LETTER_PHASE_RE = re.compile(r"\baudit(?:'s)?\s+Phase\s+([A-I])\b", re.I)
+
+# Bare per-cycle self-audit ids (MANIFEST.md "Identifier convention", adopted via ADR
+# 0003): an FF-/F- id carrying no YYYY-MM-DD/ cycle qualifier. Surfaces that carry their
+# own cycle context are exempt: the authority texts (their worked-example namespace),
+# CHANGELOG.md (dated headings), adr/ (dated by their Status/Source headers), and
+# examples/ (a third-party namespace). Template forms (FF-NNN) have no digits and never
+# match.
+BARE_ID_IGNORE = "drift-check: ignore-bare-id"
+BARE_ID_RE = re.compile(r"(?<!\d\d\d\d-\d\d-\d\d/)\bFF?-\d{3}\b")
+BARE_ID_EXEMPT_FILES = {"audit-spec.md", "profile-directive.md", "CHANGELOG.md"}
+BARE_ID_EXEMPT_DIRS = ("adr/", "examples/")
+
+# Derived files content-hash-bound to the authority texts (P-013 via ADR 0003): each
+# MANIFEST.md "Content-hash binding" line attests the exact authority-text bytes the
+# derived file was last synced against, and is re-attested at every authority cut.
+HASH_BOUND_DERIVED = [
+    "companions/kickoff-prompt.md",
+    "companions/explainer.md",
+    ".agents/skills/run-agentic-audit/SKILL.md",
+]
+BINDING_LINE_RE = re.compile(
+    r"^(?P<derived>\S+) @ audit-spec\.md=sha256:(?P<spec>[0-9a-f]{64})"
+    r" profile-directive\.md=sha256:(?P<directive>[0-9a-f]{64})$"
+)
 
 failures: list[str] = []
 
@@ -135,6 +167,25 @@ def check_2_manifest_authority(a: dict[str, str]) -> None:
             fail("2-manifest", f"MANIFEST.md authority table missing exact entry: {e!r}")
 
 
+def missing_agents_literals(directive_text: str, agents_text: str) -> list[str]:
+    """The directive's schema-identifier literals that AGENTS.md fails to quote verbatim.
+
+    AGENTS.md item 4 explains `directive_version` (tracks the directive's header version
+    at each cut) and `audit_spec_target` (the pinned consumption baseline, per ADR 0002)
+    and must quote both current literals, so a cut that changes either literal is forced
+    to update AGENTS.md in the same revision. AGENTS.md is deliberately NOT in CONSUMERS:
+    check 4 would false-positive on the intentional v3.1 baseline pin it documents.
+    """
+    missing = []
+    for key in ("directive_version", "audit_spec_target"):
+        m = re.search(rf'^\s*{key}:\s*"([^"]+)"', directive_text, re.M)
+        if m is None:
+            missing.append(f"{key}: literal not parseable from profile-directive.md")
+        elif f'"{m.group(1)}"' not in agents_text:
+            missing.append(f'{key}: AGENTS.md does not quote the current literal "{m.group(1)}"')
+    return missing
+
+
 def check_3_current_targets(a: dict[str, str]) -> None:
     man = read("MANIFEST.md")
     for e in (f"Audit Spec {a['spec_ver']}", f"Profile Directive {a['dir_ver']}"):
@@ -147,6 +198,8 @@ def check_3_current_targets(a: dict[str, str]) -> None:
         for decl in (spec_decl, dir_decl):
             if decl and decl not in text:
                 fail("3-targets", f"{rel} does not declare current target {decl!r}")
+    for problem in missing_agents_literals(read("profile-directive.md"), read("AGENTS.md")):
+        fail("3-targets", problem)
 
 
 def check_4_no_conflicting_versions(a: dict[str, str]) -> None:
@@ -252,20 +305,134 @@ def check_8_links_resolve() -> None:
                 fail("8-link", f"{rel}: @import does not resolve -> {m}")
 
 
-def self_test() -> int:
-    """In-memory checks for the authority-aware §-reference resolver (self-audit 2026-06-08/FF-001).
+def bare_cycle_ids(line: str) -> list[str]:
+    """Bare per-cycle FF-/F- ids on `line`; lines carrying the ignore marker pass."""
+    if BARE_ID_IGNORE in line:
+        return []
+    return BARE_ID_RE.findall(line)
 
-    Guards the 2026-06-08/F-001 regression directly: a §-reference attributed to one authority
-    text but naming a section that exists only in the other must be caught, while
-    correctly-attributed, bare, ambiguous, and ignore-marked references must pass.
-    Wired into pre-commit as its own hook so the negative test can never silently rot.
+
+def check_9_bare_cycle_ids() -> None:
+    for rel in tracked_files():
+        if rel in BARE_ID_EXEMPT_FILES or rel.startswith(BARE_ID_EXEMPT_DIRS):
+            continue
+        try:
+            text = read(rel)
+        except UnicodeDecodeError:  # pragma: no cover - no binary surfaces today
+            continue
+        for lineno, line in enumerate(text.splitlines(), start=1):
+            for token in bare_cycle_ids(line):
+                fail(
+                    "9-bare-id",
+                    f"{rel}:{lineno} cites the per-cycle id {token} bare; cycle-qualify it "
+                    f'(YYYY-MM-DD/{token}, per MANIFEST.md "Identifier convention") or, if it '
+                    f"is genuinely cycle-free, mark the line with {BARE_ID_IGNORE!r}",
+                )
+
+
+def authority_hashes() -> dict[str, str]:
+    """sha256 of each authority text's bytes — the binding targets for check 10."""
+    return {
+        rel: hashlib.sha256((REPO / rel).read_bytes()).hexdigest()
+        for rel in ("audit-spec.md", "profile-directive.md")
+    }
+
+
+def binding_line(derived: str, h: dict[str, str]) -> str:
+    """The canonical wire format for one binding line (the format BINDING_LINE_RE parses)."""
+    return (
+        f"{derived} @ audit-spec.md=sha256:{h['audit-spec.md']}"
+        f" profile-directive.md=sha256:{h['profile-directive.md']}"
+    )
+
+
+def stale_hash_bindings(manifest_text: str, current: dict[str, str]) -> list[str]:
+    """Missing, stale, duplicate, or unrecognized MANIFEST.md binding lines (P-013, ADR 0003).
+
+    Every file in HASH_BOUND_DERIVED needs exactly one line of the form
+    `<derived> @ audit-spec.md=sha256:<64hex> profile-directive.md=sha256:<64hex>`
+    whose hashes equal the current authority hashes. A mismatch means an authority text
+    changed without that derived file being re-synced and re-attested. Duplicate lines
+    for one derived file fail (a stale line must never be masked by a fresher one below
+    it), and a binding-shaped line for a file outside the bound set fails (it would look
+    mechanically checked while never being checked).
     """
+    rows: dict[str, tuple[str, str]] = {}
+    problems = []
+    for raw in manifest_text.splitlines():
+        m = BINDING_LINE_RE.match(raw.strip())
+        if not m:
+            continue
+        derived = m.group("derived")
+        if derived in rows:
+            problems.append(f"{derived}: duplicate binding line — keep exactly one per derived file")
+        rows[derived] = (m.group("spec"), m.group("directive"))
+        if derived not in HASH_BOUND_DERIVED:
+            problems.append(
+                f"{derived}: binding line for a file outside the bound set — add it to "
+                "HASH_BOUND_DERIVED in scripts/check_drift.py or remove the line"
+            )
+    for derived in HASH_BOUND_DERIVED:
+        if derived not in rows:
+            problems.append(f'{derived}: no binding line in MANIFEST.md "Content-hash binding"')
+            continue
+        for label, recorded in zip(("audit-spec.md", "profile-directive.md"), rows[derived]):
+            if recorded != current[label]:
+                problems.append(
+                    f"{derived}: bound to a stale {label} hash — re-sync the derived file, "
+                    "then re-attest (python3 scripts/check_drift.py --print-bindings)"
+                )
+    return problems
+
+
+def check_10_hash_bindings() -> None:
+    for problem in stale_hash_bindings(read("MANIFEST.md"), authority_hashes()):
+        fail("10-hash-bind", problem)
+
+
+def print_bindings() -> int:
+    """Emit the current, correct MANIFEST.md binding lines (used to re-attest at a cut).
+
+    The emitted lines REPLACE the previous ones in MANIFEST.md — duplicates fail check 10.
+    """
+    h = authority_hashes()
+    for derived in HASH_BOUND_DERIVED:
+        print(binding_line(derived, h))
+    return 0
+
+
+def self_test() -> int:
+    """In-memory negative tests for the resolver and the gate-hardening rules.
+
+    Group 1 covers the authority-aware §-reference resolver (self-audit
+    2026-06-08/FF-001). It guards the 2026-06-08/F-001 regression directly: a
+    §-reference attributed to one authority text but naming a section that exists only
+    in the other must be caught, while correctly-attributed, bare, ambiguous, and
+    ignore-marked references must pass. Groups 2-4 cover the 2026-06-10 gate-hardening
+    rules (ADR 0003 follow-through): the bare-cycle-id rule (check 9), the AGENTS.md
+    schema-identifier literal check (check 3), and the content-hash binding (check 10).
+    NOT covered (exercised only by the live checks): phase-label attribution (check 7),
+    stale-filename matching (check 5), link/@import resolution (check 8), and the
+    heading extractor feeding check 6.
+    Wired into pre-commit as its own hook so the negative tests can never silently rot.
+    Test ids are assembled by concatenation so this file never carries a bare id itself.
+    """
+    ok = True
+
+    def run(group: str, cases: list[tuple[object, object, str]]) -> None:
+        nonlocal ok
+        print(f"  -- {group}")
+        for got, expect, note in cases:
+            if got != expect:
+                ok = False
+            print(f"  [{'PASS' if got == expect else 'FAIL'}] expect={expect!s:5} got={got!s:5} :: {note}")
+
     sections = {
         "audit-spec.md": {"0", "10", "11.3", "11.6", "11.12"},
         "profile-directive.md": {"0", "5", "11", "13"},
     }
     sections["__merged__"] = sections["audit-spec.md"] | sections["profile-directive.md"]
-    cases = [
+    ref_cases = [
         ("the profile directive §11.12 mapping", True, "wrong-authority: spec-only section cited as directive"),
         ("the default mapping from §11.12 of `audit-spec.md`", False, "real consumer line; spec section, spec named"),
         ("audit spec §13 is the rule", True, "wrong-authority: directive-only section cited as spec"),
@@ -280,19 +447,67 @@ def self_test() -> int:
         ("the spec §13 says so", False, "short form 'the spec' is ambiguous -> merged fallback (intentional)"),
         ("Project Profile Discovery Directive §11.12", False, "long-form name not bound -> merged fallback (intentional)"),
     ]
-    ok = True
-    for line, expect, note in cases:
-        flagged = bool(unresolved_section_refs(line, sections))
-        if flagged != expect:
-            ok = False
-        print(f"  [{'PASS' if flagged == expect else 'FAIL'}] expect={expect!s:5} got={flagged!s:5} :: {note}")
-    print("2026-06-08/FF-001 self-test PASSED" if ok else "2026-06-08/FF-001 self-test FAILED")
+    run(
+        "§-reference resolver (2026-06-08/FF-001)",
+        [(bool(unresolved_section_refs(line, sections)), expect, note) for line, expect, note in ref_cases],
+    )
+
+    ff, f_id = "FF-" + "004", "F-" + "012"
+    run("bare-cycle-id rule (check 9)", [
+        (bool(bare_cycle_ids(f"the {ff} linter")), True, "bare FF id -> flagged"),
+        (bool(bare_cycle_ids(f"the 2026-06-07/{ff} linter")), False, "cycle-qualified id -> passes"),
+        (bool(bare_cycle_ids(f"finding {f_id} reopened")), True, "bare F id -> flagged"),
+        (bool(bare_cycle_ids(f"keep {ff} here  {BARE_ID_IGNORE}")), False, "explicit ignore marker"),
+        (bool(bare_cycle_ids("template forms FF-NNN / F-NNN")), False, "template letters, never digits"),
+    ])
+
+    directive_stub = '  directive_version: "project-profile-directive-v9.9"\n  audit_spec_target: "agentic-audit-spec-v3.1"\n'
+    quotes_both = 'stub: `"project-profile-directive-v9.9"` and `"agentic-audit-spec-v3.1"`'
+    stale_one = 'stub: `"project-profile-directive-v9.8"` and `"agentic-audit-spec-v3.1"`'
+    run("AGENTS.md literal currency (check 3)", [
+        (len(missing_agents_literals(directive_stub, quotes_both)), 0, "both literals quoted -> passes"),
+        (len(missing_agents_literals(directive_stub, stale_one)), 1, "stale directive_version literal -> flagged"),
+        (len(missing_agents_literals(directive_stub, "no literals here")), 2, "both literals missing -> flagged"),
+        (len(missing_agents_literals("no parseable keys", quotes_both)), 2, "unparseable directive -> flagged, not skipped"),
+    ])
+
+    cur = {"audit-spec.md": "a" * 64, "profile-directive.md": "b" * 64}
+    stale = {"audit-spec.md": "f" * 64, "profile-directive.md": cur["profile-directive.md"]}
+
+    def binding_block(stale_for: str = "", drop: str = "") -> str:
+        return "\n".join(
+            binding_line(derived, stale if derived == stale_for else cur)
+            for derived in HASH_BOUND_DERIVED
+            if derived != drop
+        )
+
+    kickoff = HASH_BOUND_DERIVED[0]
+    masked = binding_line(kickoff, stale) + "\n" + binding_block()  # stale row above a fresh one
+    run("content-hash binding (check 10)", [
+        (len(stale_hash_bindings(binding_block(), cur)), 0, "all bindings current -> passes"),
+        (len(stale_hash_bindings(binding_block(stale_for=kickoff), cur)), 1, "one stale authority hash -> flagged"),
+        (len(stale_hash_bindings(binding_block(drop=kickoff), cur)), 1, "missing binding line -> flagged"),
+        (len(stale_hash_bindings("", cur)), len(HASH_BOUND_DERIVED), "no binding block -> every derived file flagged"),
+        (len(stale_hash_bindings(masked, cur)), 1, "duplicate row -> flagged even when the later row is fresh"),
+        (len(stale_hash_bindings(binding_block() + "\n" + binding_line("companions/rogue.md", cur), cur)), 1,
+         "binding line outside the bound set -> flagged"),
+        (bool(BINDING_LINE_RE.match(binding_line(kickoff, cur))), True,
+         "print-bindings format round-trips through the parser"),
+    ])
+
+    print(
+        "drift-linter self-test PASSED (2026-06-08/FF-001 resolver + 2026-06-10 gate-hardening rules)"
+        if ok
+        else "drift-linter self-test FAILED"
+    )
     return 0 if ok else 1
 
 
 def main() -> int:
     if "--self-test" in sys.argv:
         return self_test()
+    if "--print-bindings" in sys.argv:
+        return print_bindings()
     authority = parse_authority()
     if authority["spec_ver"] and authority["dir_ver"]:
         print(
@@ -307,6 +522,8 @@ def main() -> int:
     check_6_section_refs_resolve()
     check_7_phase_labels()
     check_8_links_resolve()
+    check_9_bare_cycle_ids()
+    check_10_hash_bindings()
 
     if failures:
         print(f"\n2026-06-07/FF-004 drift check FAILED — {len(failures)} issue(s):")

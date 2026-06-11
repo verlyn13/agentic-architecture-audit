@@ -24,7 +24,11 @@ an authority text, the authority text wins** — fix the companion, never the au
 
 Authority-text cuts are recorded as ADRs in `adr/` (numbered, kebab-case, following the
 established header and section order). Reversing a recorded decision requires a superseding
-ADR.
+ADR. `DECISIONS.md` is the standing decision ledger (durable `D-NNN` ids, never reused or
+renumbered): queued proposals, rejections with reasons, and open decisions, each naming its
+source — an ADR, the transcribed review, or a recorded operator plan whose durable record
+is the ledger entry itself. Check it before re-raising a settled question or re-opening a
+rejected one; record new standing decisions there as they land.
 
 ## Setup and checks
 
@@ -37,13 +41,19 @@ There is no build, install step, or test suite. The single quality gate is repo 
   --self-test`, 2026-06-08/FF-001); both run directly with plain `python3` when diagnosing a
   failure. A drift failure means a **content** fix (versions, section refs, links), never a
   formatting fix.
-- The linter scans **git-tracked** markdown only — `git add` a new file, then lint, before
-  trusting a clean result. Two commit-blocking rules to know up front: a line that names
+- The linter scans **git-tracked** files only — `git add` a new file, then lint, before
+  trusting a clean result. Commit-blocking rules to know up front: a line that names
   exactly one authority text binds every section reference on that line to that text's real
-  headings, and a lettered (profile-directive) phase described as an audit phase is flagged.
-  The full convention — lettered phases belong to the profile directive, numbered phases to
+  headings; a lettered (profile-directive) phase described as an audit phase is flagged
+  (the full convention — lettered phases belong to the profile directive, numbered phases to
   the audit spec, never attribute one text's phase style to the other — holds in both
-  directions, but only the lettered-as-audit direction is mechanically gated.
+  directions, but only the lettered-as-audit direction is mechanically gated); a bare
+  `FF-`/`F-` id (three digits, no `YYYY-MM-DD/` cycle qualifier) is flagged anywhere except
+  the authority texts, `CHANGELOG.md`, `adr/`, and `examples/` (see `MANIFEST.md`,
+  "Identifier convention", including the opt-out marker for genuinely cycle-free lines);
+  and `MANIFEST.md`'s content-hash binding lines must match the
+  current authority texts (at a cut: re-sync the derived files, then regenerate the lines
+  with `python3 scripts/check_drift.py --print-bindings`).
 
 ## Editing discipline (read before changing anything)
 
