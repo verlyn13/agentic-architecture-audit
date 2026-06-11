@@ -1,7 +1,7 @@
 # ADR 0004 — Evidence gets typed freshness and durable ids; enforcement claims get tested against implemented gates
 
-- **Status:** Proposed — 2026-06-10 (drafted with the cut; awaiting operator approval of the
-  Audit Spec v3.5 / Profile Directive v1.6 merge)
+- **Status:** Accepted — 2026-06-11 (operator-approved; applied via Audit Spec v3.5 /
+  Profile Directive v1.6, PR #13 / package 1.5.0)
 - **Decider:** Jeffrey V. Johnson
 - **Source:** the thirteen proposals queued by
   `adr/0003-cross-application-review-dispositions.md` (P-001..P-010 and P-012's
