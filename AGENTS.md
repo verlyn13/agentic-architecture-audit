@@ -94,6 +94,10 @@ There is no build, install step, or test suite. The single quality gate is repo 
   `git config commit.template .gitmessage`).
 - **Hooks / CI:** `.pre-commit-config.yaml` runs at commit time; `.github/workflows/hygiene.yml`
   re-runs it on every push and PR. **Never use `--no-verify` or any hook-bypass.**
+- **Hub interop:** When posture/phase/peers/visibility change, update `project.yaml` (hub interop
+  header; contract:
+  `/Users/verlyn13/Repos/verlyn13/meta-inventory/docs/decisions/0002-project-intelligence-spec.md`
+  §D3).
 
 ## Git workflow
 
