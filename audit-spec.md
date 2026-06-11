@@ -1,10 +1,10 @@
-# Agentic Architecture Audit — Agent Specification v3.4
+# Agentic Architecture Audit — Agent Specification v3.5
 
-**Version:** v3.4
-**Specification date:** 2026-06-09
+**Version:** v3.5
+**Specification date:** 2026-06-10
 **Status:** Operator-to-agent instruction document
 **Scope:** Project-agnostic and tooling-agnostic
-**Lineage:** Supersedes Agentic Architecture Audit Specification v3.3. Preserves all v3.3 behavior while adding: agent-skill packages as first-class contracts and authority surfaces (§5.1, §6.3, Phases 4 and 6, §8.5, §8.7, §9.1, §11.3); protocol-object lifecycle status recorded against the pinned protocol revision (Phase 4, §8.5, §14), with protocol tasks, extension declarations, server-delivered UI surfaces, and registry/discovery metadata as inventoryable objects; agent-identity and delegated-commerce evidence targets in the authority matrix (Phase 6, §9.7); customization supply-chain checks under the agent-operability lens; and refreshed reference anchors (§14). Additive only: v3.3 audits remain valid. Profiles from Project Profile Discovery Directive v1.4 are consumed unchanged; Directive v1.5 adds optional discovery fields this specification consumes when present. The rationale is recorded in `adr/0002-skills-as-contracts-and-protocol-object-lifecycle.md`.
+**Lineage:** Supersedes Agentic Architecture Audit Specification v3.4. Preserves all v3.4 behavior while adding: a per-cycle id-durability discipline for findings and fitness functions (Phase 10, §8.11/§8.12 optional `cycle` field); typed citation provenance — `observed_at`, `valid_until`, and `evidence_lane` extending the citation schema (§8.1, Phase 10.5); named `claimed-automation-absent` and `instruction-reference-broken` flags on the contract surface (Phase 4, §8.5); a review-power proportionality matrix and inversion flag (Phase 6, §8.7, §9.9); a `regression-trap` eval-suite mode (Phase 9, §8.10); metalanguage containment — audit-internal taxonomy is never exported into project vocabulary, with the Phase 1 collision check extended to audit-taxonomy collisions (§3, Phase 1, Phase 5, §8.2); operating-agent model/CLI baseline and alias-resolution drift checks (Phase 6, §8.7); an agent-memory truth-maintenance evidence target (Phase 5, §8.6); a negative-self-test rule for implemented fitness functions (Phase 10, §8.12, §11.11); and a standing-decision-ledger evidence target (§11.10). Additive only: v3.4 audits remain valid. Profiles from Project Profile Discovery Directive v1.5 are consumed unchanged; Directive v1.6 adds optional discovery fields this specification consumes when present. The rationale is recorded in `adr/0004-evidence-discipline-and-enforcement-honesty.md`.
 
 ---
 
@@ -56,7 +56,7 @@ Every audit declares one of:
 - `steady-state` — prior audit exists. Inherits cycle-history conventions; runs all phases against current evidence.
 - `focused-diff` — prior audit exists and the profile diff shows narrow change. Runs only phases whose inputs changed materially. Default fallback is `steady-state` if eligibility is unclear.
 
-The mode is recorded in `00-scope.md` and `SUMMARY.md`. The first cycle's overhead amortizes; later cycles consume the previous dated profile, the profile diff, the cycle history, and prior audit findings instead of restating them in directives.
+The mode is recorded in `00-scope.md` and `SUMMARY.md`. The first cycle's overhead amortizes; later cycles consume the previous dated profile, the profile diff, the cycle history, and prior audit findings instead of restating them in directives. Prior-cycle citations carry their own freshness window where the optional §8.1 freshness fields (`observed_at`, `valid_until`, `evidence_lane`) are recorded, so steady-state and focused-diff consumers see per-citation staleness instead of trusting only the prior cycle's ship-time re-verification.
 
 ---
 
@@ -115,6 +115,7 @@ If a theme is supplied without an explicit dimension mapping, use the default fr
 13. **Protocol surfaces are first-class.** MCP, A2A, workflow-description, callback, hosted-tool, and remote-agent surfaces are classified by their concrete objects and lifecycle states, not only by vendor or package name.
 14. **Authority is a matrix.** Approval presence alone is insufficient. Record approval mode, deny/ask/allow precedence where applicable, bypass modes, protected-path behavior, secondary credential acquisition, network/callback authority, and enforcement evidence.
 15. **Version-derived companions.** Kickoff prompts, friendly explainers, schemas, examples, and manifests derived from this specification must declare the source spec version/date they target. Inconsistency with this authority spec is documentation drift.
+16. **Contain the audit's own metalanguage.** The audit's classification vocabulary (store classes, surface types, flag names) is audit-internal taxonomy, never recommended project vocabulary. Where the profile declares project-banned terms, audit prose artifacts restate them in the project's canonical vocabulary; taxonomy values remain legal inside machine-readable schema fields.
 
 ---
 
@@ -328,6 +329,7 @@ Phases run in order. Each phase has inputs, procedure, boundaries, outputs, and 
 3. Identify terms appearing in multiple contexts with distinct definitions.
 4. Identify multiple terms used for the same concept.
 5. Record cited definitions and usage evidence.
+6. Where the profile declares forbidden terms (`conventions.forbidden_terms`), check the audit's own taxonomy (§6 categories, store classes, surface types) against them and record each hit as an `audit-taxonomy-collision` (Prime Directive 16).
 
 **Boundary declarations**
 
@@ -344,6 +346,7 @@ Phases run in order. Each phase has inputs, procedure, boundaries, outputs, and 
 
 - Every term has at least one citation.
 - Every collision candidate has citations for each conflicting use.
+- Every audit-taxonomy collision carries the project-side citation from the profile's forbidden-terms entry; the taxonomy side is identified by naming the taxonomy value and its section of this specification — it needs no project-file citation, and the §8.2 entry records the project term's definitions only.
 - Unsupported terms are removed or marked `unclassified`.
 
 ---
@@ -514,10 +517,15 @@ Flag:
 - payment-capable surface without a verifiable intent mandate or bounded delegation contract;
 - agentic output without runtime/action provenance manifest;
 - generated content without content-provenance position where content authenticity matters;
-- release/build output without build/source provenance position where supply-chain integrity matters.
+- release/build output without build/source provenance position where supply-chain integrity matters;
+- claimed automation absent: governance or instruction text claiming automated enforcement that is not implemented — every "CI-enforced," "blocked at merge," or "automated by X" claim must map to an implemented gate **at the claimed power class** (per §9.9: a "blocked at merge" claim is satisfied only by a merge-blocking gate, not a warn-only job; route to Phase 9 for gate confirmation); claims about approval gates on authority principals stay with Phase 6's `approval-not-enforced`;
+- instruction reference broken: an instruction contract citing repository artifacts (paths, templates, checklists, configuration files) that do not resolve in the tree — environment-resolved commands are out of scope.
 
 **Boundary declarations**
 
+- Do not flag a rule honestly documented as manual review as `claimed-automation-absent`; the flag fires only on claims of automation that no implemented gate backs.
+- Do not flag forward-looking statements ("will be CI-enforced") as `claimed-automation-absent`; roadmap language is not a claim of present enforcement.
+- Do not route instruction-content staleness or contradiction here — that is Phase 8 (`stale-authoring-artifact`, `contradictory-guidance`); Phase 4 flags only references that fail to resolve.
 - Do not equate having schemas with contract discipline unless producer, consumer, validation, and versioning are evident.
 - Do not require a particular schema technology.
 - Do not treat comments as machine-readable contracts unless the project intentionally uses comment-based IDL generation and cites it.
@@ -540,6 +548,8 @@ Flag:
 - Every subagent boundary has a typed message contract or a flag.
 - Every cross-agent instruction surface resolves to a canonical `AGENTS.md` with consistent bridges, or carries a cross-agent-instruction-drift flag.
 - Every agent-skill package has a frontmatter contract and a source-provenance note recorded, or a flag.
+- Every enforcement claim in governance or instruction contracts maps to an implemented gate, or carries a `claimed-automation-absent` flag.
+- Every repository artifact referenced by an instruction contract resolves in the tree, or carries an `instruction-reference-broken` flag.
 
 ---
 
@@ -580,7 +590,11 @@ Classify every store and memory surface:
 - `checkpoint-state`;
 - `unknown`.
 
+These class values (here and in the §8.6 Store schema) are audit-internal taxonomy for classification, never recommended project vocabulary. Where the project bans a term (profile `conventions.forbidden_terms`), prose artifacts restate it in the project's canonical vocabulary while schema fields keep the taxonomy value (Prime Directive 16).
+
 For each, record: owner context, retention, deletion or reset path, write authority, read authority, invalidation trigger, lifecycle, sensitivity classification if evident, citations.
+
+For memory-class surfaces (operator-rules, long-term, session/user/tenant memory, agent scratchpads), additionally record the truth-maintenance path: how agent-held claims get corrected when repository facts change. This extends the invalidation trigger — the trigger records what mechanically invalidates an entry; truth maintenance records whether any discipline exists for correcting stale agent-held claims at all. Fact-responsive invalidation and bounded staleness (TTL or scheduled re-derivation) both qualify as a discipline; record which. Content staleness of authored instruction files stays with Phase 8 (`stale-authoring-artifact`); untested lifecycle paths stay with Phase 9 (`memory-lifecycle-untested`) — this target asks whether a correction path exists.
 
 **Boundary declarations**
 
@@ -601,6 +615,7 @@ For each, record: owner context, retention, deletion or reset path, write author
 - Every store has an owner or an `owner-unknown` flag.
 - Every writable store has write-authority evidence or a missing-authority flag.
 - Every memory surface is classified by purpose, durability, owner, and deletion/reset semantics.
+- Every memory-class surface records a truth-maintenance path or carries a `memory-truth-maintenance-absent` flag.
 
 ---
 
@@ -637,6 +652,7 @@ For each principal — agent, subagent, automation, tool, action, service, adapt
 - token delegation or exchange model;
 - agent identity attestation (workload identity, signed agent cards, signed-agent request headers, identity-chaining or token-exchange grants binding the agent to a user or workload);
 - capability pre-approvals granted by customization layers (skills, hooks, plugins) consumed by repo-operating agents, and the source-pinning or lockdown controls for those layers;
+- operating-agent model/CLI baseline where the profile records it (observed agent CLI versions, observed model posture, and model-alias pins with their recorded resolutions);
 - payment or commerce delegation (intent mandates, spending bounds, human-present versus delegated modes);
 - sandbox or isolation model;
 - escalation paths;
@@ -660,6 +676,8 @@ Identify:
 - hosted MCP or remote-agent path without token-scope or consent boundary;
 - skill or customization layer that pre-approves capabilities or executes bundled scripts without an authority declaration;
 - customization layers consumed by repo-operating agents without source pinning, marketplace control, or vetting evidence;
+- model-alias pin that no longer resolves to the recorded baseline (where the profile records alias pins) — silent repointing of an alias changes the operating principal without any repo change;
+- review-power inversion per §9.9 (one surface with strictly greater enforcement power and strictly weaker mandated review than another — e.g., a merge-blocking surface less reviewed than a warn-only one);
 - payment-capable principal without a verifiable intent mandate, spending bound, or delegation contract;
 - server-delivered UI surface without sandbox or message-boundary declaration;
 - subagent without authority manifest.
@@ -685,6 +703,8 @@ Identify:
 - Every callback-capable, hosted-tool, or remote-agent principal has authentication and token-scope evidence or a missing-authority flag.
 - Every customization layer that grants capabilities to a repo-operating agent has authority and source-provenance evidence or a flag.
 - Every payment-capable or commerce-delegated principal has mandate and delegation-bound evidence or a missing-authority flag.
+- Where the profile records operating-agent alias pins, each pin's current resolution is confirmed against the recorded baseline or flagged `model-alias-resolution-drift`.
+- Where any review mandate exists in governance, enforcement-power and mandated-review classes are recorded for every governance-relevant surface (§9.9) — inversion detection requires classifying the unreviewed surfaces too — with inversions flagged `review-power-inversion`.
 
 ---
 
@@ -805,7 +825,7 @@ Prompt and context values to grep and classify include:
 - test or release pass/fail criteria;
 - eval rubrics that gate behavior.
 
-Locate policy artifacts: domain policy code, declarative policy files, configuration, ADRs, governance rules, access-control rules, feature flags, schema constraints, eval rubrics.
+Locate policy artifacts: domain policy code, declarative policy files, configuration, ADRs, decision ledgers, governance rules, access-control rules, feature flags, schema constraints, eval rubrics.
 
 Classify each prompt or context surface:
 
@@ -861,7 +881,7 @@ Classify each prompt or context surface:
 
 **Procedure**
 
-Locate eval suites, golden datasets, regression fixtures, human-review rubrics, automated scorers, model or prompt comparison records, CI quality gates, release gates, drift tracking, protocol-conformance tests, approval-path tests, async/resume lifecycle tests, safety/security test suites, hardware/sensor/external-system verification suites where relevant.
+Locate eval suites, golden datasets, regression fixtures, regression-trap corpora, human-review rubrics, automated scorers, model or prompt comparison records, CI quality gates, release gates, drift tracking, protocol-conformance tests, approval-path tests, async/resume lifecycle tests, safety/security test suites, hardware/sensor/external-system verification suites where relevant.
 
 Classify eval mode for each suite:
 
@@ -869,6 +889,7 @@ Classify eval mode for each suite:
 - `online` — production sampling with LLM-as-judge or classifier scoring. Run continuously.
 - `live` — canary deployments, A/B comparison, shadow mode.
 - `calibration` — scoring-method validation (does the LLM judge agree with humans?).
+- `regression-trap` — behavioral traps seeded from observed agent failures, replayed to catch recurrence. Distinct from `offline` golden-data regression (which scores expected outputs) and from code regression tests: each trap encodes a previously observed failure and cites the incident that motivated it. A suite seeded from past failures but scored as golden expected outputs may satisfy both descriptions — classify it `regression-trap` only when each case cites its motivating incident; otherwise `offline`.
 
 Map each suite to: agent/tool/action/prompt/retrieval-surface/subagent/protocol-surface/lifecycle path under test, pass criteria, scoring method, current pass rate, dataset version, CI integration, release gate status, drift tracking, ownership, citations.
 
@@ -898,6 +919,7 @@ Flag:
 - Do not treat unit tests as evals unless they test behavior quality against expected outputs or rubrics.
 - Do not assume no eval is required; require an operator or artifact justification.
 - Do not credit a single passing eval as coverage.
+- Do not credit a trap corpus with no runnable harness as coverage; per the Phase 10.5 rule it demotes to `manual-review-only` — it is documentation until harnessed.
 - Do not treat protocol schema validation as behavior coverage unless the behavior, lifecycle, and authority paths are tested too.
 
 **Outputs**
@@ -929,10 +951,11 @@ Flag:
 1. Score each dimension using the rubric in §11.
 2. Produce structural current-state findings only (`10-findings.*`).
 3. Produce future-state fitness-function candidates separately (`10-fitness-functions.*`).
-4. Cross-reference findings and fitness functions without sharing IDs (findings use `F-NNN`, fitness functions use `FF-NNN`).
+4. Cross-reference findings and fitness functions without sharing IDs (findings use `F-NNN`, fitness functions use `FF-NNN`); ids follow the per-cycle durability discipline in §10.2.
 5. Rank findings by priority.
 6. Apply strategic-theme weighting where applicable.
 7. Classify caveats per §9.6.
+8. For each implemented fitness function with non-trivial matching logic, record whether it ships a negative self-test wired to run wherever the fitness function runs; absence reduces the credit it earns under §11.11.
 
 #### 10.1 Finding priority
 
@@ -957,6 +980,8 @@ A fitness function describes a future safeguard: static rule, schema diff, contr
 
 A finding may reference one or more fitness functions. A fitness function may protect against one or more findings. IDs remain independent.
 
+Ids are also per-cycle: each audit cycle starts its own `F-NNN`/`FF-NNN` namespace. The cycle records its id discipline — either ids are monotonic and never reused across cycles, or any id cited in an artifact that outlives its cycle (READMEs, configuration, instruction files, commit messages) is cycle-qualified with a `YYYY-MM-DD/` prefix. Artifacts that carry their own cycle date (the `audit/<date>/` outputs, dated changelog entries) keep bare ids for that cycle's own ids; an id cited from a different cycle is qualified even there. Either discipline satisfies this rule; the choice is recorded once in the project's conventions or governance record, noted in each cycle's `00-scope.md`, and kept. The in-run `id` fields keep the §8.11/§8.12 anchored patterns — qualification applies to ids as cited, with the optional `cycle` field carrying the qualifier in structured outputs.
+
 **Boundary declarations**
 
 - Do not combine a structural finding and a future safeguard into one ID.
@@ -964,6 +989,8 @@ A finding may reference one or more fitness functions. A fitness function may pr
 - Do not propose a fitness function without naming the enforceable rule and enforcement category.
 - Do not write `SUMMARY.md` before Phase 10.5 smoke-test.
 - Do not propose a fitness function whose enforcement tech does not exist for the project's stack.
+- Do not cite a per-cycle id bare in an artifact that outlives its cycle unless the recorded discipline is monotonic-never-reused.
+- Do not propose an implemented fitness function with non-trivial matching logic without stating whether a negative self-test ships with it.
 
 **Outputs**
 
@@ -979,6 +1006,8 @@ A finding may reference one or more fitness functions. A fitness function may pr
 - Every finding has source evidence and a confidence level.
 - Every fitness function names enforcement category, scope, failure condition, and owner recommendation.
 - Findings and fitness functions have separate IDs.
+- The cycle's id discipline is recorded, and ids cited outside dated cycle artifacts follow it.
+- Every implemented fitness function with non-trivial matching logic records negative-self-test presence or absence.
 
 ---
 
@@ -997,7 +1026,7 @@ This phase exists because audit cycles repeatedly shipped findings whose evidenc
 
 For each current-state finding:
 
-1. Re-read or re-grep the cited evidence against the current working branch (HEAD).
+1. Re-read or re-grep the cited evidence against the current working branch (HEAD). Where a citation records an `evidence_lane` (§8.1), re-verify through that lane; a citation whose lane is unreachable from the current session (always true of `unavailable`) records `not-run` with the lane as the reason.
 2. Record the current result.
 3. Compare with the snapshot-backed finding.
 4. Classify smoke-test outcome:
@@ -1093,7 +1122,10 @@ The audit produces fully valid JSON. Fragments below define the required shape. 
     "evidence": {"type": "string"},
     "method": {"type": "string", "description": "command or read operation that produced this evidence (e.g., 'rg', 'ast-grep', 'view')"},
     "snapshot_ref": {"type": "string", "description": "git revision or profile date the evidence was captured against"},
-    "current_ref": {"type": "string", "description": "git revision the evidence was re-validated against in Phase 10.5"}
+    "current_ref": {"type": "string", "description": "git revision the evidence was re-validated against in Phase 10.5"},
+    "observed_at": {"type": "string", "description": "when the evidence was captured (ISO-8601); snapshot_ref/current_ref identify WHICH revision, observed_at records WHEN"},
+    "valid_until": {"type": "string", "description": "forward-looking trust horizon for steady-state/focused-diff consumers (ISO-8601); past it, re-verify before relying on this citation"},
+    "evidence_lane": {"enum": ["repo-local", "host-verifiable", "unavailable"], "description": "channel through which this evidence can be re-verified: repo-local (from the working tree), host-verifiable (only via the hosting platform's interface — e.g., branch-protection settings or check rollups), unavailable (no re-verification channel exists beyond the original observation). The lane is intrinsic to the evidence, not to the session: Phase 10.5 records not-run for any citation whose lane is unreachable from the current session. A re-verification lane, not a §9.8 provenance class"}
   }
 }
 ```
@@ -1120,7 +1152,7 @@ The audit produces fully valid JSON. Fragments below define the required shape. 
       }
     },
     "collision": {"type": "boolean"},
-    "collision_type": {"enum": ["same-term-different-meaning", "different-term-same-meaning", "none"]}
+    "collision_type": {"enum": ["same-term-different-meaning", "different-term-same-meaning", "audit-taxonomy-collision", "none"]}
   }
 }
 ```
@@ -1204,7 +1236,7 @@ The audit produces fully valid JSON. Fragments below define the required shape. 
     "consumers": {"type": "array", "items": {"type": "string"}},
     "validation": {"type": "string"},
     "compatibility_policy": {"type": "string"},
-    "flags": {"type": "array", "items": {"enum": ["route-without-spec", "tool-without-schema", "event-without-payload", "config-without-validation", "version-drift", "duplicate-name", "producer-consumer-drift", "sdk-surface-uncontracted", "prompt-args-without-schema", "mcp-surface-uninventoried", "a2a-card-without-auth", "a2a-task-contract-missing", "workflow-overlay-unlinked", "callback-schema-missing", "subagent-boundary-untyped", "retrieval-chunk-untyped", "skill-frontmatter-invalid", "skill-authority-undeclared", "skill-provenance-unvetted", "protocol-object-deprecated", "ui-extension-unsandboxed", "commerce-mandate-missing", "runtime-provenance-missing", "content-provenance-position-missing", "build-provenance-position-missing", "cross-agent-instruction-drift", "provenance-missing"]}},
+    "flags": {"type": "array", "items": {"enum": ["route-without-spec", "tool-without-schema", "event-without-payload", "config-without-validation", "version-drift", "duplicate-name", "producer-consumer-drift", "sdk-surface-uncontracted", "prompt-args-without-schema", "mcp-surface-uninventoried", "a2a-card-without-auth", "a2a-task-contract-missing", "workflow-overlay-unlinked", "callback-schema-missing", "subagent-boundary-untyped", "retrieval-chunk-untyped", "skill-frontmatter-invalid", "skill-authority-undeclared", "skill-provenance-unvetted", "protocol-object-deprecated", "ui-extension-unsandboxed", "commerce-mandate-missing", "runtime-provenance-missing", "content-provenance-position-missing", "build-provenance-position-missing", "cross-agent-instruction-drift", "claimed-automation-absent", "instruction-reference-broken", "provenance-missing"]}},
     "citations": {"type": "array", "items": {"$ref": "#/$defs/Citation"}}
   }
 }
@@ -1224,6 +1256,7 @@ The audit produces fully valid JSON. Fragments below define the required shape. 
     "read_authority": {"type": "array", "items": {"type": "string"}},
     "write_authority": {"type": "array", "items": {"type": "string"}},
     "invalidation_trigger": {"type": "string"},
+    "truth_maintenance": {"type": "string", "description": "how agent-held claims in this store get corrected when repository facts change; extends invalidation_trigger (the mechanical trigger) with the correction discipline"},
     "deletion_or_reset_path": {"type": "string"},
     "lifecycle": {"type": "string"},
     "sensitivity": {"type": "string"},
@@ -1260,7 +1293,7 @@ The audit produces fully valid JSON. Fragments below define the required shape. 
     "hosted_or_local": {"enum": ["hosted", "local", "hybrid", "n/a", "unknown"]},
     "token_delegation": {"type": "string"},
     "sandbox_model": {"type": "string"},
-    "flags": {"type": "array", "items": {"enum": ["escalation", "ambient-authority", "undeclared-scope", "write-without-approval-policy", "approval-not-enforced", "bypass-mode-unaccounted", "approval-precedence-unclear", "secret-scope-too-broad", "secondary-credential-too-broad", "workspace-root-too-broad", "callback-auth-missing", "remote-agent-token-scope-unknown", "computer-use-unsandboxed", "skill-authority-undeclared", "customization-source-unpinned", "ui-extension-unsandboxed", "commerce-delegation-unbounded", "subagent-without-policy"]}},
+    "flags": {"type": "array", "items": {"enum": ["escalation", "ambient-authority", "undeclared-scope", "write-without-approval-policy", "approval-not-enforced", "bypass-mode-unaccounted", "approval-precedence-unclear", "secret-scope-too-broad", "secondary-credential-too-broad", "workspace-root-too-broad", "callback-auth-missing", "remote-agent-token-scope-unknown", "computer-use-unsandboxed", "skill-authority-undeclared", "customization-source-unpinned", "ui-extension-unsandboxed", "commerce-delegation-unbounded", "model-alias-resolution-drift", "review-power-inversion", "subagent-without-policy"]}},
     "citations": {"type": "array", "items": {"$ref": "#/$defs/Citation"}}
   }
 }
@@ -1330,7 +1363,7 @@ The audit produces fully valid JSON. Fragments below define the required shape. 
   "required": ["name", "covers", "scoring_method", "mode", "ci_integrated", "citations"],
   "properties": {
     "name": {"type": "string"},
-    "mode": {"enum": ["offline", "online", "live", "calibration"]},
+    "mode": {"enum": ["offline", "online", "live", "calibration", "regression-trap"]},
     "covers": {"type": "array", "items": {"type": "string"}},
     "golden_dataset_path": {"type": "string"},
     "dataset_version": {"type": "string"},
@@ -1355,6 +1388,7 @@ The audit produces fully valid JSON. Fragments below define the required shape. 
   "required": ["id", "title", "dimension", "severity", "confidence", "status", "snapshot_evidence", "smoke_test", "recommendation_boundary"],
   "properties": {
     "id": {"type": "string", "pattern": "^F-[0-9]{3}$"},
+    "cycle": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$", "description": "audit-cycle date qualifying this id across cycles (optional; see the §10.2 id discipline)"},
     "title": {"type": "string"},
     "dimension": {"type": "string"},
     "severity": {"type": "integer", "minimum": 1, "maximum": 5},
@@ -1379,6 +1413,7 @@ The audit produces fully valid JSON. Fragments below define the required shape. 
   "required": ["id", "title", "rule", "enforcement_category", "scope", "failure_condition", "ff_bucket"],
   "properties": {
     "id": {"type": "string", "pattern": "^FF-[0-9]{3}$"},
+    "cycle": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$", "description": "audit-cycle date qualifying this id across cycles (optional; see the §10.2 id discipline)"},
     "title": {"type": "string"},
     "rule": {"type": "string"},
     "enforcement_category": {"enum": ["dependency-boundary", "schema-diff", "contract-registry", "protocol-contract-registry", "static-analysis", "policy-as-code", "prompt-scan", "authority-manifest", "approval-matrix", "memory-lifecycle-lint", "telemetry-lint", "provenance-attestation", "eval-coverage", "adr-template", "release-gate", "companion-doc-drift", "manual-review-only", "custom"]},
@@ -1386,6 +1421,7 @@ The audit produces fully valid JSON. Fragments below define the required shape. 
     "failure_condition": {"type": "string"},
     "ff_bucket": {"type": "string"},
     "related_findings": {"type": "array", "items": {"type": "string"}},
+    "negative_self_test": {"type": "string", "description": "where this fitness function's negative self-test lives and how it runs; record 'absent' when an implemented function with non-trivial matching logic ships none (reduces §11.11 credit)"},
     "implementation_notes": {"type": "string"}
   }
 }
@@ -1518,6 +1554,19 @@ A principal is not "scoped" merely because some of these fields are documented. 
 | `build-source` | source revision, build inputs, dependency attestations, generated artifact hash, release/signing record |
 
 Do not use one class as evidence for another unless an artifact explicitly links them.
+
+### 9.9 Review-power proportionality
+
+Classify each governance-relevant surface (CI configuration, hook configuration, release tooling, instruction files, policy files) on two ordered scales:
+
+| Scale | Ordered values |
+| --- | --- |
+| Enforcement power | `blocks-merge` > `blocks-commit` > `warn-only` > `prose-only` |
+| Mandated review | `review-mandatory` > `review-requested` > `none` |
+
+`blocks-merge` means a failing check prevents integration on the protected path (e.g., a required status check); `blocks-commit` means failure stops a local commit (e.g., an enforced hook); `warn-only` surfaces report but do not stop; `prose-only` rules live in text alone. `review-mandatory` means the surface's own change path requires review before merge; `review-requested` means review is solicited but not enforced. Vendor mechanisms are examples only — classify by function. Record `unknown` for a class that cannot be confirmed from the session (host-side enforcement configuration is often readable only through the platform interface — note the evidence lane) and assert no inversion involving an `unknown` class; classify a surface that enforces at multiple powers by its highest confirmed power.
+
+An **inversion** exists when one surface has strictly greater enforcement power than another while carrying strictly weaker mandated review (the highest-power surfaces are then the least-reviewed). Phase 6 records the two classes per surface where governance mandates review and flags inversions `review-power-inversion` (§8.7), citing both surfaces. Phase 4's `claimed-automation-absent` check uses the same power classes when testing whether a claimed gate is implemented. This is an evidence target consumed by §11 scoring; it adds no scored dimension.
 
 ---
 
@@ -1687,12 +1736,16 @@ Score each dimension 0–3 with evidence. Aggregate score is informational; the 
 - 2: Governance artifacts are current enough to guide the audit; some drift remains.
 - 3: ADRs, conventions, cycle history, and fitness functions are current, explicit, and validated. ADR template includes "Decides / Scopes to / Does not decide / Carve-outs" sections.
 
+*Standing decision ledger (note).* Evidence here includes whether the project maintains a standing decision ledger — durable ids that are never reused, with queued/rejected/open statuses — distinct from its ADR record and from audit-cycle history, with ledger and ADRs cross-referencing (an ADR carries a decision event's rationale; the ledger is the "is this settled?" index). If none exists, record whether that is not applicable, unknown, or a governance gap given the project's decision volume.
+
 ### 11.11 Architectural fitness functions
 
 - 0: None.
 - 1: Rules documented but not enforced.
 - 2: Some automated checks exist.
 - 3: Comprehensive CI/release gates cover dependency direction, schemas, protocol-contract registries, authority matrices, memory lifecycle, telemetry, prompts, evals, provenance, companion-doc drift, and governance templates.
+
+*Negative self-tests (note).* An implemented fitness function with non-trivial matching logic earns full credit here only when a negative self-test runs wherever the function runs; without one, credit it as partially verified — a matcher that can rot silently is weaker enforcement evidence (Phase 10 step 8, §8.12 `negative_self_test`).
 
 ### 11.12 Strategic-theme default-mapping
 
@@ -1859,7 +1912,7 @@ Per-step boundaries are declared inline at each phase. The following apply globa
 
 ## 16. Versioning
 
-This specification is **v3.4** dated 2026-06-09.
+This specification is **v3.5** dated 2026-06-10.
 
 Breaking changes bump the major version. Additive schema fields, additional examples, or clarification of existing behavior bump the minor version. Patch versions correct wording without changing behavior.
 
@@ -1934,6 +1987,22 @@ Changes from v3.3:
 - Additive only: v3.3 audits remain valid. Profiles from Directive v1.4 are consumed unchanged; Directive v1.5 adds optional discovery fields this specification consumes when present.
 - Rationale recorded in `adr/0002-skills-as-contracts-and-protocol-object-lifecycle.md`.
 
+Changes from v3.4:
+
+- Added a **per-cycle id-durability discipline** (Phase 10 step 4, §10.2; optional `cycle` field in §8.11/§8.12): ids are either monotonic-never-reused across cycles or cycle-qualified wherever cited in artifacts that outlive their cycle; the anchored in-run id patterns are unchanged, and dated cycle artifacts keep bare ids.
+- Added **typed citation provenance** to §8.1: optional `observed_at`, `valid_until`, and `evidence_lane` (`repo-local | host-verifiable | unavailable`) extending `snapshot_ref`/`current_ref` — which revision vs. when captured, how long trustable, and through what channel re-verifiable — with Phase 10.5 recording `not-run` through the lane and §1.2 noting per-citation freshness for steady-state/focused-diff consumers.
+- Added the **`claimed-automation-absent`** flag (Phase 4, §8.5): governance or instruction text claiming automated enforcement with no implemented gate, routed to Phase 9 for gate confirmation using the §9.9 power classes; approval-gate claims on authority principals remain `approval-not-enforced` (Phase 6, §8.7), and honestly-manual rules are not flagged.
+- Added the **`instruction-reference-broken`** flag (Phase 4, §8.5): instruction contracts citing repository artifacts that do not resolve in the tree; environment-resolved commands are out of scope, and content staleness remains Phase 8.
+- Added the **§9.9 review-power proportionality matrix** and `review-power-inversion` flag (Phase 6, §8.7): ordered enforcement-power (`blocks-merge > blocks-commit > warn-only > prose-only`) and mandated-review scales with a decidable pairwise inversion condition.
+- Added the **`regression-trap`** eval-suite mode (Phase 9, §8.10): behavioral traps seeded from observed agent failures, distinct from golden-data regression and code regression tests, with the existing Phase 10.5 demotion rule applied — an unharnessed trap corpus is `manual-review-only`, not coverage.
+- Added **metalanguage containment** (Prime Directive 16, Phase 1 step 6, Phase 5 note, §8.2): audit-internal taxonomy is never exported into project vocabulary; the Phase 1 collision check gains the `audit-taxonomy-collision` type against profile-declared forbidden terms; machine-readable schema fields keep taxonomy values.
+- Added **operating-agent baseline drift checks** (Phase 6, §8.7 `model-alias-resolution-drift`): where the profile records operating-agent CLI versions, model posture, and model-alias pins, the audit confirms each pin still resolves to the recorded baseline.
+- Added an **agent-memory truth-maintenance evidence target** (Phase 5, §8.6 optional `truth_maintenance`, prose flag `memory-truth-maintenance-absent`): whether agent-held claims have a correction path when repository facts change, extending `invalidation_trigger`.
+- Added a **negative-self-test rule for implemented fitness functions** (Phase 10 step 8, §8.12 optional `negative_self_test`, §11.11 note): a non-trivially-matching implemented fitness function without a negative self-test earns reduced credit.
+- Added a **standing-decision-ledger evidence target** (§11.10 note; decision ledgers join the Phase 8.1 policy-artifact locate list).
+- Additive only: v3.4 audits remain valid. Profiles from Directive v1.5 are consumed unchanged; Directive v1.6 adds optional discovery fields this specification consumes when present.
+- Rationale recorded in `adr/0004-evidence-discipline-and-enforcement-honesty.md`.
+
 ## Appendix A — Migration from v2 to v3.x
 
 For projects with a v2 audit cycle on file:
@@ -1991,3 +2060,16 @@ For projects with a v3.3 audit cycle on file:
 3. In Phase 0, re-pin protocol revisions per §14 and record the lifecycle status of each protocol object in use; flag `protocol-object-deprecated` where the project relies on objects deprecated at the pinned revision without a migration position.
 4. Re-run Phase 4 and Phase 6 for protocol tasks, extension declarations (including server-delivered UI), registry/discovery metadata, and — only where an agent can initiate or approve payments — delegated-commerce contracts.
 5. No scoring change: prior dimension scores remain valid. New flags surface as new findings against the same rubric.
+
+---
+
+## Appendix F — Migration from v3.4 to v3.5
+
+For projects with a v3.4 audit cycle on file:
+
+1. Preserve the v3.4 audit artifacts as the historical record.
+2. Record the cycle's id discipline (monotonic-never-reused, or cycle-qualified citation) once in Phase 10; prior cycles' ids are not retro-edited — dated artifacts keep bare ids.
+3. Where governance or instruction text claims automated enforcement, re-run the Phase 4 flag checks (`claimed-automation-absent`, `instruction-reference-broken`) and confirm claimed gates in Phase 9.
+4. Where governance mandates review, classify enforcement power and mandated review per §9.9 in Phase 6 and flag inversions; where the profile records operating-agent alias pins, confirm each pin's current resolution.
+5. The optional fields (`cycle`, `observed_at`, `valid_until`, `evidence_lane`, `truth_maintenance`, `negative_self_test`) backfill lazily — their absence in v3.4 artifacts is not drift.
+6. No scoring change: prior dimension scores remain valid. New flags surface as new findings against the same rubric.
