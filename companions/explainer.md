@@ -1,6 +1,6 @@
 # What This Audit Does (Friendly Version)
 
-This explainer targets Agentic Architecture Audit Specification v3.4 (2026-06-09) and Project Profile Discovery Directive v1.5 (2026-06-09). If it conflicts with the spec, the spec wins.
+This explainer targets Agentic Architecture Audit Specification v3.5 (2026-06-10) and Project Profile Discovery Directive v1.6 (2026-06-10). If it conflicts with the spec, the spec wins.
 
 You built something with AI. Maybe it works. Maybe it mostly works. Maybe you can feel it getting harder to change without breaking, and you're starting to wonder if you've painted yourself into a corner.
 
@@ -104,5 +104,5 @@ The worst version of running this audit is doing it once, ignoring it, and forge
 
 ---
 
-Spec reference: `audit-spec.md` (full v3.4 specification, 2026-06-09).
-Precursor: `profile-directive.md` (v1.5) — run this first to produce the profile snapshot the audit consumes.
+Spec reference: `audit-spec.md` (full v3.5 specification, 2026-06-10).
+Precursor: `profile-directive.md` (v1.6) — run this first to produce the profile snapshot the audit consumes.

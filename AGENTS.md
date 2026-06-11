@@ -69,7 +69,7 @@ There is no build, install step, or test suite. The single quality gate is repo 
    (`companions/kickoff-prompt.md`, `companions/explainer.md`). Keep it consistent —
    inconsistency is exactly the drift this package teaches you to catch.
 4. **The YAML schema identifiers are not filenames.** In `profile-directive.md`,
-   `directive_version` (currently `"project-profile-directive-v1.5"` — it tracks the
+   `directive_version` (currently `"project-profile-directive-v1.6"` — it tracks the
    directive's header version at each cut) and `audit_spec_target` (pinned at
    `"agentic-audit-spec-v3.1"` — the deliberate consumption baseline, per ADR 0002) are
    version identifiers emitted into a profile snapshot. Do **not** rename them to match the

@@ -1,10 +1,10 @@
-# Project Profile Discovery Directive v1.5
+# Project Profile Discovery Directive v1.6
 
-**Version:** v1.5
-**Directive date:** 2026-06-09
+**Version:** v1.6
+**Directive date:** 2026-06-10
 **Status:** Operator-to-agent instruction document
 **Scope:** Project-agnostic and tooling-agnostic
-**Lineage:** Supersedes Project Profile Discovery Directive v1.4. Preserves all v1.4 behavior, fields, and validation rules while adding discovery coverage for surfaces that became first-class in the audit specification's v3.4 cut: agent-skill packages (`agent_surface.skills`), protocol task/extension/server-delivered-UI fields under the MCP block, a delegated-commerce protocol-surface block, and committed repo-operating-agent configuration fields in the authority baselines — together with matching validation rules for the new fields. Purely additive: no fields are removed and no existing validation behavior changes, so a v1.4 snapshot needs no migration to satisfy v1.5 (the new fields appear as additions in the profile diff).
+**Lineage:** Supersedes Project Profile Discovery Directive v1.5. Preserves all v1.5 behavior, fields, and validation rules while adding discovery coverage for surfaces that became first-class in the audit specification's v3.5 cut: a structured `conventions.forbidden_terms` projection of project-banned vocabulary, an optional `agent_surface.operating_agents` block (observed agent CLI versions, model posture, and model-alias pins with their recorded resolutions and observation dates), and a `regression-trap` eval-suite mode in the evals baseline — together with matching Phase D/E/F discovery steps and validation rules. Purely additive: no fields are removed and no existing validation behavior changes, so a v1.5 snapshot needs no migration to satisfy v1.6 (the new fields appear as additions in the profile diff).
 
 ---
 
@@ -309,6 +309,7 @@ Extract project conventions:
 
 - error-handling idiom;
 - naming conventions;
+- forbidden or banned vocabulary (terms the project's governance prohibits, with their canonical replacements where stated) — captured both as `forbidden` rules and as the structured `conventions.forbidden_terms` projection;
 - contract/versioning conventions;
 - persistence conventions;
 - prompt/policy conventions;
@@ -386,7 +387,8 @@ Locate model-mediated and automation-mediated surfaces:
 - termination logic;
 - durable-execution agent surfaces (workflow handlers that include LLM calls and checkpoint state);
 - background-agent triggers (schedule-driven or event-driven, off the user-request path);
-- paused, resumable, durable, streaming, and callback-mediated execution paths.
+- paused, resumable, durable, streaming, and callback-mediated execution paths;
+- repo-operating agents' observed baselines: agent CLI versions; observed model posture (the model identities the agent actually operates with — e.g., the default model id and any pinned overrides); and model-alias pins with what each alias currently resolves to. Cite the committed agent configuration files directly (Phase F inventories those same paths in the authority baselines); record observations with dates here and leave the configuration inventory to Phase F.
 
 Classify prompt surfaces provisionally and materialize counts by type:
 
@@ -436,7 +438,7 @@ Detect loops where a model, planner, script, or automation output feeds back int
 
 Discover baselines:
 
-1. **Evals and quality gates** — eval suites, benchmarks, golden datasets, fixtures, model tests, behavior tests, release gates, CI jobs, human rubrics. Distinguish `offline | online | live | calibration` modes. Distinguish CI integration from release-gate enforcement.
+1. **Evals and quality gates** — eval suites, benchmarks, golden datasets, fixtures, regression-trap corpora (behavioral traps seeded from observed agent failures), model tests, behavior tests, release gates, CI jobs, human rubrics. Distinguish `offline | online | live | calibration | regression-trap` modes. Distinguish CI integration from release-gate enforcement.
 2. **Observability** — tracing, metrics, logs, semantic conventions (including OTel GenAI version pinning), audit logs, model telemetry, separate `cost_attribution`, `latency_attribution`, `quality_attribution`.
 3. **Authority** — approval gates, approval modes, deny/ask/allow precedence, bypass or auto-approval modes, permission scopes, roles, protected paths, sandbox roots, browser scope, filesystem scope, callback authentication, secondary credential paths, secrets access, write authority, hosted-versus-local boundaries, default agent authority, committed repo-operating-agent configuration (permission budgets, sandbox and egress settings, lifecycle hooks, customization lockdown or marketplace controls), and agent identity attestation where evident.
 4. **Provenance** — runtime/action manifests attached to agent outputs, audit-log entries with tool/source/model/approval/task fields, content credentials or content-provenance positions, build/source attestations or release provenance, custom provenance records.
@@ -620,11 +622,11 @@ This schema is intentionally role-based rather than tool-specific. Projects may 
 ```yaml
 # ---------- META ----------
 meta:
-  profile_version: "1.5"
+  profile_version: "1.6"
   generated_at: <ISO-8601 datetime>
   snapshot_date: <YYYY-MM-DD>
   generated_by: <agent identifier>
-  directive_version: "project-profile-directive-v1.5"
+  directive_version: "project-profile-directive-v1.6"
   audit_spec_target: "agentic-audit-spec-v3.1"
   profile_mode: <first-profile | refresh | focused-refresh>
   previous_profile:
@@ -830,6 +832,16 @@ agent_surface:
     - id: <string>
       trigger: <cron | event | webhook | callback | registry | unknown>
       path: <string>
+  operating_agents:                 # optional: observed repo-operating-agent baselines
+    - agent_cli: <string | unknown>
+      cli_version: <string | unknown>
+      observed_model_posture: <string | unknown>
+      alias_pins:
+        - alias: <string>
+          pinned_in: <path>         # cite a baselines.authority.committed_agent_config_paths entry
+          resolved_to: <string | unknown>
+          observed_at: <YYYY-MM-DD>
+      evidence: [{path: <file>, lines: <range>}]
 
 automation_surface:
   scripts_or_workflows:
@@ -858,6 +870,14 @@ conventions:
   git_hooks_policy: <enforced-no-bypass | warn-only | none | unknown>
   type_check_policy: <per-function | per-file | per-module | ci-only | none | unknown>
   documented_language_style_guide: <path | none | unknown>
+  forbidden_terms:                  # structured projection of conventions.rules[] entries that ban vocabulary
+    - term: <string>
+      canonical_replacement: <string | none-stated>
+      rule_ref: <index or verbatim text of the conventions.rules[] entry this projects>
+      source:
+        type: <file | operator-interview | unknown>
+        path: <file | null>
+        lines: <range | null>
 
 # ---------- GOVERNANCE ----------
 governance:
@@ -911,7 +931,7 @@ baselines:
   evals:
     suites_directory: <path | none | unknown>
     suite_count: <integer | unknown>
-    modes_present: [<offline | online | live | calibration>]
+    modes_present: [<offline | online | live | calibration | regression-trap>]
     golden_datasets_present: <true | false | unknown>
     ci_integrated: <true | false | partial | unknown>
     release_gate: <true | false | partial | unknown>
@@ -1149,6 +1169,9 @@ Reject the profile and loop back to the relevant phase if:
 - Operator-interview answers overwrite stronger file evidence without explanation.
 - Cycle-history additions are written as accepted without operator approval.
 - `strategic_themes` is non-empty but any entry lacks `weighting` or `source`.
+- `conventions.forbidden_terms` entries lack a `rule_ref` or source metadata.
+- `agent_surface.operating_agents` is present and `cli_version` and `observed_model_posture` are `unknown` and `alias_pins` is empty, all without search notes.
+- `agent_surface.operating_agents[].alias_pins[]` entries lack `observed_at` or do not cite a committed agent-config path.
 
 ---
 
@@ -1244,6 +1267,8 @@ Audit Spec v3.1 consumes:
 - `audit_attention_flags` for phase routing;
 - `agent_surface.tools`, `agent_surface.subagents`, `agent_surface.prompts`, `agent_surface.context_assembly`, and `automation_surface` for Phases 3, 4, 6, 8, and 9;
 - `agent_surface.skills` for Phases 4, 6, and 8;
+- `agent_surface.operating_agents` for Phase 6 baseline-drift checks;
+- `conventions.forbidden_terms` for the Phase 1 collision check and Phase 5 vocabulary containment;
 - `agent_surface.protocol_surfaces` (including the commerce block) for Phases 0, 3, 4, 6, 7, 8, and 9;
 - `agent_surface.memory_surfaces_detected` and `agent_surface.execution_modes_detected` for Phases 3, 5, 6, 7, and 9;
 - `baselines.evals` for Phase 9;
@@ -1310,7 +1335,7 @@ Per-step boundaries are declared inline at each phase. The following apply globa
 
 ## 13. Versioning
 
-This directive is **v1.5** dated 2026-06-09.
+This directive is **v1.6** dated 2026-06-10.
 
 The minor-version bump is justified because the changes are additive relative to v1.0:
 
@@ -1359,6 +1384,12 @@ Additional v1.5 changes relative to v1.4 (additive fields and matching validatio
 - added a `commerce` protocol-surface block (delegated-commerce or payment-delegation surfaces, their protocols, and mandate contracts), with a matching validation rule;
 - added `committed_agent_config_paths`, `customization_lockdown`, and `agent_identity_attestation` to the authority baselines, plus committed repo-operating-agent configuration in Phase F discovery;
 - added agent-skill, protocol task/extension/UI, and commerce surfaces to Phase E discovery, and customization supply-chain controls to Phase D conventions.
+
+Additional v1.6 changes relative to v1.5 (additive fields and matching validation rules; nothing removed and no existing validation behavior changed, so v1.5 snapshots need no migration — new fields appear as additions in the profile diff):
+
+- added `conventions.forbidden_terms`: a structured, term-level projection of `conventions.rules[]` entries that ban vocabulary (term, canonical replacement, rule reference, source), discovered in Phase D, giving the audit's collision and vocabulary-containment checks a machine-readable input;
+- added `agent_surface.operating_agents`: observed repo-operating-agent baselines — agent CLI versions, observed model posture, and model-alias pins with their recorded resolutions and observation dates — discovered in Phase E by citing the committed agent configuration inventoried in Phase F, with validation rules requiring search notes when unknown and an observation date per alias pin;
+- added `regression-trap` to the eval-suite modes in Phase F discovery and `baselines.evals.modes_present`, mirroring the audit spec's §8.10 extension so a trap-corpus suite class is recordable on both sides of the handoff.
 
 Breaking schema changes should become v2.0. Additive fields or validation clarifications become v1.x. Wording-only corrections become patch releases.
 

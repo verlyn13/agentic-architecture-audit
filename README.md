@@ -33,8 +33,8 @@ New to this? Start with `companions/explainer.md`. It's the plain-language versi
 
 | File | Role |
 | --- | --- |
-| [`profile-directive.md`](profile-directive.md) | **Authority** — Project Profile Discovery Directive v1.5. Run first. |
-| [`audit-spec.md`](audit-spec.md) | **Authority** — Agentic Architecture Audit Specification v3.4. Run second. |
+| [`profile-directive.md`](profile-directive.md) | **Authority** — Project Profile Discovery Directive v1.6. Run first. |
+| [`audit-spec.md`](audit-spec.md) | **Authority** — Agentic Architecture Audit Specification v3.5. Run second. |
 | [`AGENTS.md`](AGENTS.md) | Canonical, cross-agent instructions for working in this repo (`CLAUDE.md` imports it). |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | How to contribute: the quality gate, change workflow, and release/provenance discipline. |
 | [`SECURITY.md`](SECURITY.md) | Security scope and private vulnerability reporting. |

@@ -6,7 +6,7 @@ reversed decision keeps its id and gains a superseding entry. Decision *events* 
 still recorded as ADRs in `adr/` (the ADR carries the full rationale; this ledger is the
 "is this settled?" index). Adopted as package practice 2026-06-10 via
 `adr/0003-cross-application-review-dispositions.md` (the review's P-012, part (a));
-making such a ledger an audit evidence target is itself queued below (D-012).
+the matching audit evidence target shipped at the v3.5 cut (D-012).
 
 Substance below is **restated in this package's terms** from its sources — the P-NNN /
 R-NNN ids are the 2026-06-10 cross-application review's namespace, transcribed through
@@ -19,15 +19,18 @@ drafting constraints from the *2026-06-10 forward plan* — an operator-session 
 a tracked artifact — name it in their Source line; the ledger entry itself is that
 plan's durable record.
 
-## Queued — authority-text proposals (next deliberate cut: Audit Spec v3.5 / Profile Directive v1.6)
+## Shipped — authority-text proposals (the 2026-06-10 Audit Spec v3.5 / Profile Directive v1.6 cut)
 
-All additive: no phase renumbering, no new scored dimension, new fields optional; a
-v3.4 audit and a v1.5 profile stay valid. Before drafting, each premise is
-adversarially re-verified against the then-current texts (two of the source review's
-confidence-1.0 claims died exactly that way — see D-014/D-015).
+All shipped additively at the 2026-06-10 dual cut
+(`adr/0004-evidence-discipline-and-enforcement-honesty.md`): no phase renumbering, no
+new scored dimension, new fields optional; v3.4 audits and v1.5 profiles stay valid.
+Before drafting, each premise was adversarially re-verified against the v3.4/v1.5
+texts (two of the source review's confidence-1.0 claims died exactly that way — see
+D-014/D-015); the reshapes that re-verification forced are recorded in ADR 0004's
+Context.
 
 ### D-001 — Durable or cycle-qualified finding/fitness-function ids as a spec rule
-- **Status:** Queued (Audit Spec v3.5) · **Source:** ADR 0003 (P-001) · **Priority:** High
+- **Status:** Shipped (Audit Spec v3.5 cut, 2026-06-10; ADR 0004) · **Source:** ADR 0003 (P-001) · **Priority:** High
 - The audit spec's Phase 10 gains a rule (the sources write "Audit Spec §10"; this
   ledger normalizes to the Phase 10 rule cluster — its numbered 10.1/10.2 subsections —
   since the §10 worked example carries no rules): per-cycle finding and fitness-function
@@ -39,11 +42,11 @@ confidence-1.0 claims died exactly that way — see D-014/D-015).
   in long-lived artifacts; the anchored in-run id patterns in the audit spec's
   §8.11/§8.12 schemas stay unchanged (a qualified id would violate them — at most an
   optional sibling cycle field is added). The package already practices and mechanically
-  enforces the weak form (see `MANIFEST.md`, "Identifier convention"). Strong-vs-weak is
-  open as D-016.
+  enforces the weak form (see `MANIFEST.md`, "Identifier convention"). Strong-vs-weak
+  was resolved at the cut (D-016): the shipped rule admits either discipline.
 
 ### D-002 — Typed citation provenance (freshness as data, not ceremony)
-- **Status:** Queued (Audit Spec v3.5) · **Source:** ADR 0003 (P-002) + the 2026-06-10
+- **Status:** Shipped (Audit Spec v3.5 cut, 2026-06-10; ADR 0004) · **Source:** ADR 0003 (P-002) + the 2026-06-10
   forward plan · **Priority:** Medium
 - The citation schema (path / lines / evidence / method, plus the existing
   `snapshot_ref`/`current_ref` pair) gains optional observed-at, valid-until, and
@@ -56,7 +59,7 @@ confidence-1.0 claims died exactly that way — see D-014/D-015).
   duplicate them.
 
 ### D-003 — Named claimed-automation-absent flag
-- **Status:** Queued (Audit Spec v3.5) · **Source:** ADR 0003 (P-003) · **Priority:** High
+- **Status:** Shipped (Audit Spec v3.5 cut, 2026-06-10; ADR 0004) · **Source:** ADR 0003 (P-003) · **Priority:** High
 - A named flag for governance or instruction text that claims automated enforcement
   which does not exist: every "CI-enforced", "blocked at merge", "automated by X" claim
   must map to an implemented gate, else it is flagged. The class is proven three times
@@ -65,14 +68,15 @@ confidence-1.0 claims died exactly that way — see D-014/D-015).
   incidentally.
 
 ### D-004 — Named instruction-reference-broken flag
-- **Status:** Queued (Audit Spec v3.5) · **Source:** ADR 0003 (P-004) · **Priority:** High
+- **Status:** Shipped (Audit Spec v3.5 cut, 2026-06-10; ADR 0004) · **Source:** ADR 0003 (P-004) · **Priority:** High
 - The cross-agent instruction-contract checks gain a flag for instruction contracts
   citing artifacts that do not exist in the tree (e.g. a definition-of-done requiring a
   checklist from a template the repo does not contain). An unsatisfiable checklist item
   silently trains agents to skip checklist items.
 
 ### D-005 — Review-power proportionality inversion check
-- **Status:** Queued (Audit Spec v3.5, **drafted last, with drop authority**) ·
+- **Status:** Shipped (Audit Spec v3.5 cut, 2026-06-10, as §9.9 + the Phase 6 check;
+  ADR 0004 — drafted last with drop authority, and the drop condition was not met) ·
   **Source:** ADR 0003 (P-005) + the 2026-06-10 forward plan · **Priority:** High
 - Map mandated review/approval friction against actual enforcement power per surface and
   flag inversions: hard-enforcing surfaces (e.g. scripts whose gates block merges) that
@@ -82,10 +86,10 @@ confidence-1.0 claims died exactly that way — see D-014/D-015).
   repo, never independently re-verified here. If it cannot be worded operationally
   (blocks-merge / blocks-commit / warn-only / prose) **and** tool-neutrally at drafting
   time, it is moved to this ledger as Dropped with revival condition "corroborated by a
-  second target repo" (open as D-017).
+  second target repo" (D-017 — resolved as shipped; the drop condition was not met).
 
 ### D-006 — Regression-trap corpora as a first-class suite class
-- **Status:** Queued (Audit Spec v3.5) · **Source:** ADR 0003 (P-006) · **Priority:** Medium
+- **Status:** Shipped (Audit Spec v3.5 cut, 2026-06-10; ADR 0004) · **Source:** ADR 0003 (P-006) · **Priority:** Medium
 - The Phase 9 suite classification gains a regression-trap class: behavioral traps
   seeded from *observed agent failures* (distinct from code regression tests), with the
   existing fitness-function demotion rule applied honestly — a trap corpus with no
@@ -95,7 +99,7 @@ confidence-1.0 claims died exactly that way — see D-014/D-015).
   commit.
 
 ### D-007 — Metalanguage containment (vocabulary-collision safety)
-- **Status:** Queued (Audit Spec v3.5 + Profile Directive v1.6) · **Source:** ADR 0003 (P-007) · **Priority:** High
+- **Status:** Shipped (Audit Spec v3.5 + Profile Directive v1.6 cut, 2026-06-10; ADR 0004) · **Source:** ADR 0003 (P-007) · **Priority:** High
 - Three parts, shipped together: (a) a Phase 5 note that the audit's store-class enum
   values (`long-term-memory`, `operator-rules-memory`, …) are audit-internal taxonomy,
   never recommended project vocabulary; (b) the profile directive's §5 schema may
@@ -106,8 +110,8 @@ confidence-1.0 claims died exactly that way — see D-014/D-015).
   state "memory") must never have it injected by the audit's own artifacts.
 
 ### D-008 — Operating agents' model/CLI baseline and alias-resolution drift
-- **Status:** Queued (Profile Directive v1.6 + Audit Spec v3.5) · **Source:** ADR 0003
-  (P-008) + the 2026-06-10 forward plan · **Priority:** High
+- **Status:** Shipped (Profile Directive v1.6 + Audit Spec v3.5 cut, 2026-06-10; ADR
+  0004) · **Source:** ADR 0003 (P-008) + the 2026-06-10 forward plan · **Priority:** High
 - The profile's agent surface gains: observed agent CLI version(s), observed model
   posture, and any alias pins (e.g. a settings file pinning a model alias) with what the
   alias currently resolves to; the audit gains a drift check for alias pins that no
@@ -116,7 +120,7 @@ confidence-1.0 claims died exactly that way — see D-014/D-015).
   where it would surface. Designed **jointly with D-002** (same freshness machinery).
 
 ### D-009 — Agent-memory-vs-repo-truth drift as an evidence target
-- **Status:** Queued (Audit Spec v3.5) · **Source:** ADR 0003 (P-009) · **Priority:** High
+- **Status:** Shipped (Audit Spec v3.5 cut, 2026-06-10; ADR 0004) · **Source:** ADR 0003 (P-009) · **Priority:** High
 - Where operator-rules/agent-memory stores exist, the audit records whether the project
   has an invalidation discipline — how agent-held claims get corrected when repo facts
   change — and flags memory surfaces with no such path. The spec inventories memory
@@ -124,7 +128,7 @@ confidence-1.0 claims died exactly that way — see D-014/D-015).
   repo.
 
 ### D-010 — Negative self-tests for implemented fitness functions as a stated rule
-- **Status:** Queued (Audit Spec v3.5) · **Source:** ADR 0003 (P-010) · **Priority:** Medium
+- **Status:** Shipped (Audit Spec v3.5 cut, 2026-06-10; ADR 0004) · **Source:** ADR 0003 (P-010) · **Priority:** Medium
 - An implemented fitness function with non-trivial matching logic should ship a negative
   self-test wired to run wherever the fitness function runs; one without it carries
   reduced confidence in scoring. This names the package's own proven in-house pattern
@@ -145,7 +149,8 @@ confidence-1.0 claims died exactly that way — see D-014/D-015).
 ### D-012 — Standing decision ledger
 - **Status:** Practice **implemented** 2026-06-10 (this file); the audit-spec evidence
   target (does the project maintain a standing open-question queue distinct from its
-  ADRs? — a §11.10 governance item) is Queued (Audit Spec v3.5) · **Source:** ADR 0003
+  ADRs? — a §11.10 governance item) shipped at the same cut (Audit Spec v3.5,
+  2026-06-10; ADR 0004) · **Source:** ADR 0003
   (P-012) · **Priority:** Medium
 
 ### D-013 — Content-hash binding of derived files to the authority texts
@@ -176,21 +181,26 @@ confidence-1.0 claims died exactly that way — see D-014/D-015).
   check polices the restatement *set* — that check remains unbuilt (see the header
   note). Full refutation in ADR 0003, Context.
 
-## Open
+## Open decisions (all currently resolved)
 
 ### D-016 — Strong vs. weak form of the id rule (decides D-001's final shape)
-- **Status:** Open; decided at the v3.5 cut · **Source:** ADR 0003 ("Does not decide")
-- Monotonic never-reused ids versus mandatory cycle-qualification. The package's adopted
-  convention (cycle-qualification on undated surfaces) is compatible with either.
+- **Status:** Resolved 2026-06-10 (ADR 0004, Decides 1) · **Source:** ADR 0003 ("Does
+  not decide")
+- Monotonic never-reused ids versus mandatory cycle-qualification. Resolved by admitting
+  **both**: the shipped rule requires a project to record one of the two disciplines and
+  keep it; the package's own convention (cycle-qualification on undated surfaces)
+  satisfies it.
 
 ### D-017 — Ship or drop the proportionality-inversion check (D-005)
-- **Status:** Open; decided last during v3.5 drafting, with drop authority · **Source:**
+- **Status:** Resolved 2026-06-10 — **shipped** (ADR 0004, Decides 4) · **Source:**
   ADR 0003 + the 2026-06-10 forward plan
-- Drop condition: cannot be worded operationally and tool-neutrally. Revival condition
-  if dropped: corroborated by a second target repo.
+- Drop condition (cannot be worded operationally and tool-neutrally) was tested during
+  drafting and not met: §9.9 ships two short ordered scales and a decidable pairwise
+  inversion condition. The sole-source caveat is recorded in ADR 0004's Carve-outs;
+  revival path if field use disproves the wording is a superseding ADR.
 
 ### D-018 — Tag `v1.4.1` if the cut stalls
-- **Status:** Open; tripwire date 2026-06-24 · **Source:** 2026-06-10 forward plan
-- The landed patches (PR #11, gate hardening) ride untagged into the next minor by
-  precedent. If the v3.5/v1.6 cut has not started by the tripwire date, propose tag
-  `v1.4.1` so they do not sit unreleased.
+- **Status:** Closed 2026-06-10 — tripwire not reached · **Source:** 2026-06-10 forward
+  plan
+- The v3.5/v1.6 cut shipped before the 2026-06-24 tripwire; the landed patches ride
+  into the `v1.5.0` minor as planned, and no `v1.4.1` tag is needed.

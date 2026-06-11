@@ -11,10 +11,66 @@ companion-only edit bumps the **patch**.
 
 ## [Unreleased]
 
-Companion/tooling patches — no authority-text change. Two batches, both sourced from the
-2026-06-10 cross-application review (run against an independently governed agentic repo,
-"HCS"); the report itself stays untracked per `MANIFEST.md` ("Not bundled"). Rationale
-and the full disposition record in `adr/0003-cross-application-review-dispositions.md`.
+## [1.5.0] - 2026-06-10
+
+Cuts **Agentic Architecture Audit Specification v3.5** (was v3.4) and **Project Profile
+Discovery Directive v1.6** (was v1.5) — the second dual-authority cut. Sources the
+proposals queued by the 2026-06-10 cross-application review (ADR 0003), each premise
+adversarially re-verified against the v3.4/v1.5 texts before drafting; one proposal
+(the profile JSON Schema) remains queued as a post-cut package patch. All changes
+additive; **minor** package bump per the versioning rule. Companions, `MANIFEST.md`
+(including the content-hash binding re-attestation), `README.md`, `AGENTS.md`, and
+`CITATION.cff` are synced; the drift linter verifies the sync. Rationale recorded in
+`adr/0004-evidence-discipline-and-enforcement-honesty.md`.
+
+### Agentic Architecture Audit Specification — v3.4 → v3.5 (2026-06-10)
+
+- **Per-cycle id durability** (Phase 10, §10.2; optional `cycle` field in §8.11/§8.12):
+  ids are monotonic-never-reused across cycles or cycle-qualified wherever cited in
+  artifacts that outlive their cycle; the anchored in-run id patterns are unchanged and
+  dated cycle artifacts keep bare ids.
+- **Typed citation provenance** (§8.1): optional `observed_at`, `valid_until`, and
+  `evidence_lane` (`repo-local | host-verifiable | unavailable`) extending
+  `snapshot_ref`/`current_ref`; Phase 10.5 re-verifies through the lane and records
+  `not-run` for `unavailable`.
+- **Enforcement-honesty flags** (Phase 4, §8.5): `claimed-automation-absent` —
+  governance/instruction text claiming automated enforcement no implemented gate backs —
+  and `instruction-reference-broken` — instruction contracts citing repository artifacts
+  that do not resolve in the tree.
+- **Review-power proportionality** (§9.9, Phase 6, §8.7 `review-power-inversion`):
+  ordered enforcement-power (`blocks-merge > blocks-commit > warn-only > prose-only`)
+  and mandated-review scales with a decidable pairwise inversion condition.
+- **`regression-trap` eval-suite mode** (Phase 9, §8.10): behavioral traps seeded from
+  observed agent failures, with the existing demotion rule applied — an unharnessed trap
+  corpus is `manual-review-only`, not coverage.
+- **Metalanguage containment** (Prime Directive 16, Phase 1, Phase 5, §8.2
+  `audit-taxonomy-collision`): audit-internal taxonomy is never exported into a
+  project's controlled vocabulary; machine-readable schema fields stay exempt.
+- **Operating-agent baseline drift** (Phase 6, §8.7 `model-alias-resolution-drift`):
+  where the profile records CLI versions, model posture, and alias pins, the audit
+  confirms each pin still resolves to the recorded baseline.
+- **Agent-memory truth maintenance** (Phase 5, §8.6 optional `truth_maintenance`, prose
+  flag `memory-truth-maintenance-absent`): whether agent-held claims have a correction
+  path when repository facts change.
+- **Negative-self-test rule** for implemented fitness functions (Phase 10 step 8, §8.12
+  optional `negative_self_test`, §11.11 note) and a **standing-decision-ledger**
+  evidence target (§11.10 note).
+
+### Project Profile Discovery Directive — v1.5 → v1.6 (2026-06-10)
+
+- Adds `conventions.forbidden_terms` (a structured projection of vocabulary-banning
+  rules), an optional `agent_surface.operating_agents` block (observed agent CLI
+  versions, model posture, and model-alias pins with resolutions and observation dates,
+  citing the committed agent configuration), and `regression-trap` in the evals
+  baseline — with matching Phase D/E/F discovery steps and §7 validation rules. Purely
+  additive: v1.5 snapshots need no migration.
+
+### Also included (companion/tooling, shipped unreleased on `main` before this cut)
+
+Two patch batches (PRs #11 and #12), both sourced from the 2026-06-10 cross-application
+review (run against an independently governed agentic repo, "HCS"); the report itself
+stays untracked per `MANIFEST.md` ("Not bundled"). Rationale and the full disposition
+record in `adr/0003-cross-application-review-dispositions.md`.
 
 **Pre-cut gate hardening (2026-06-10, follow-through on ADR 0003):**
 
@@ -59,7 +115,9 @@ and the full disposition record in `adr/0003-cross-application-review-dispositio
   `.agents/skills/run-agentic-audit/SKILL.md` derived surface, ADR convention,
   release/provenance steps, and published repo slug recorded.
 - **Queued for a future deliberate cut** (Audit Spec v3.5 / Profile Directive v1.6):
-  thirteen additive proposals, dispositioned in ADR 0003's table.
+  thirteen additive proposals, dispositioned in ADR 0003's table — shipped by this
+  release's authority cut, except the profile JSON Schema (still queued as a post-cut
+  package patch) and the content-hash binding (already shipped in the gate hardening).
 
 ## [1.4.0] - 2026-06-09
 
@@ -239,7 +297,8 @@ Preserves the v3 audit philosophy and adds targeted coverage for:
 - server-exposed prompts and privileged-context injection boundaries;
 - eval coverage for protocol surfaces, approval paths, async lifecycle, and memory lifecycle.
 
-[Unreleased]: https://github.com/verlyn13/agentic-architecture-audit/compare/v1.4.0...HEAD
+[Unreleased]: https://github.com/verlyn13/agentic-architecture-audit/compare/v1.5.0...HEAD
+[1.5.0]: https://github.com/verlyn13/agentic-architecture-audit/releases/tag/v1.5.0
 [1.4.0]: https://github.com/verlyn13/agentic-architecture-audit/releases/tag/v1.4.0
 [1.3.0]: https://github.com/verlyn13/agentic-architecture-audit/releases/tag/v1.3.0
 [1.2.0]: https://github.com/verlyn13/agentic-architecture-audit/releases/tag/v1.2.0

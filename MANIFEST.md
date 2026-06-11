@@ -12,15 +12,15 @@ an authority text, the authority text wins.**
 
 | File | Role | Current target |
 | --- | --- | --- |
-| `profile-directive.md` | Profile snapshot authority | Project Profile Discovery Directive v1.5, 2026-06-09 |
-| `audit-spec.md` | Audit authority | Agentic Architecture Audit Specification v3.4, 2026-06-09 |
+| `profile-directive.md` | Profile snapshot authority | Project Profile Discovery Directive v1.6, 2026-06-10 |
+| `audit-spec.md` | Audit authority | Agentic Architecture Audit Specification v3.5, 2026-06-10 |
 
 ## Derived companions
 
 | File | Role | Must target |
 | --- | --- | --- |
-| `companions/kickoff-prompt.md` | Copy/paste operational prompt for audit agents | Audit Spec v3.4 and Profile Directive v1.5 |
-| `companions/explainer.md` | Operator-facing explainer | Audit Spec v3.4 and Profile Directive v1.5 |
+| `companions/kickoff-prompt.md` | Copy/paste operational prompt for audit agents | Audit Spec v3.5 and Profile Directive v1.6 |
+| `companions/explainer.md` | Operator-facing explainer | Audit Spec v3.5 and Profile Directive v1.6 |
 | `.agents/skills/run-agentic-audit/SKILL.md` | Cross-agent skill entry point for running the audit | Defers to `companions/kickoff-prompt.md` (no independent version) |
 
 ### Content-hash binding
@@ -38,9 +38,9 @@ Adopted 2026-06-10 (the review's P-013) via
 `adr/0003-cross-application-review-dispositions.md`.
 
 ```text
-companions/kickoff-prompt.md @ audit-spec.md=sha256:5156e43ce4b65e5fdf493dfb4c6d88fe4486aeff162f3879673acd49b4d05144 profile-directive.md=sha256:54c5d10e8a41494bf809601cd2ceed30985208c25ed82a91fd392f47c401b681
-companions/explainer.md @ audit-spec.md=sha256:5156e43ce4b65e5fdf493dfb4c6d88fe4486aeff162f3879673acd49b4d05144 profile-directive.md=sha256:54c5d10e8a41494bf809601cd2ceed30985208c25ed82a91fd392f47c401b681
-.agents/skills/run-agentic-audit/SKILL.md @ audit-spec.md=sha256:5156e43ce4b65e5fdf493dfb4c6d88fe4486aeff162f3879673acd49b4d05144 profile-directive.md=sha256:54c5d10e8a41494bf809601cd2ceed30985208c25ed82a91fd392f47c401b681
+companions/kickoff-prompt.md @ audit-spec.md=sha256:fa4c799df5dfb37a91dfe51267fc753b9fe5b71ee093e40bc3ee652bbb4bc339 profile-directive.md=sha256:d7940f32fac0ee0cb2630aa838b9466c5dd6d08debf5b9064e70dac36b167bb3
+companions/explainer.md @ audit-spec.md=sha256:fa4c799df5dfb37a91dfe51267fc753b9fe5b71ee093e40bc3ee652bbb4bc339 profile-directive.md=sha256:d7940f32fac0ee0cb2630aa838b9466c5dd6d08debf5b9064e70dac36b167bb3
+.agents/skills/run-agentic-audit/SKILL.md @ audit-spec.md=sha256:fa4c799df5dfb37a91dfe51267fc753b9fe5b71ee093e40bc3ee652bbb4bc339 profile-directive.md=sha256:d7940f32fac0ee0cb2630aa838b9466c5dd6d08debf5b9064e70dac36b167bb3
 ```
 
 The binding is to the **authority** content, not the derived file's own bytes: a stale
@@ -98,7 +98,8 @@ self-test). Dated artifacts carry their cycle context and keep bare ids: cycle o
 `CHANGELOG.md` entries, and ADRs (dated by their Status/Source header and frozen once
 merged — never retro-edited).
 (Adopted 2026-06-10 via `adr/0003-cross-application-review-dispositions.md`; the spec-level
-durable-id rule remains a queued proposal.)
+durable-id rule shipped in Audit Spec v3.5 via
+`adr/0004-evidence-discipline-and-enforcement-honesty.md`.)
 Mechanically enforced since the 2026-06-10 gate hardening: the drift linter flags a bare
 `FF-`/`F-` id (three digits, no `YYYY-MM-DD/` qualifier) on every git-tracked surface
 except the authority texts, `CHANGELOG.md`, `adr/`, and `examples/`; a genuinely
